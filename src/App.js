@@ -36,7 +36,7 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <div style={{ padding: 20 }}>
+        {/* <div style={{ padding: 20 }}> */}
           <NavBar />
           <Routes>
             <Route path="/register" element={<Register />} />
@@ -53,7 +53,7 @@ function App() {
           </Routes>
           <ToastContainer />
         </div>
-      </div>
+      
     </Router>
   );
 }
