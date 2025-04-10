@@ -1,4 +1,5 @@
 import React from "react";
+import { FaBars,  FaHome,  FaLeaf,  FaTrophy,  FaStore,  FaUserCircle, FaSignInAlt} from "react-icons/fa";
 
 export default function Footer() {
   return (
@@ -21,7 +22,17 @@ export default function Footer() {
           <p>Clean Earth, Planet 0001 🌍</p>
         </div>
       </div>
-
+      <div style={styles.mapContainer}>
+        <iframe
+          title="Green Credit Location"
+          src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d7881.537420731765!2d38.777001000000006!3d8.993418000000005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2set!4v1744291162372!5m2!1sen!2set"
+          width="100%"
+          height="250"
+          style={{ border: 0, borderRadius: "10px" }}
+          allowFullScreen=""
+          loading="lazy"
+        ></iframe>
+      </div>
       <div style={styles.bottomBar}>
         <p>
           &copy; {new Date().getFullYear()} Green Credit. All rights reserved.
@@ -55,6 +66,10 @@ const styles = {
   subtitle: {
     fontSize: "18px",
     marginBottom: "10px",
+  },
+  mapContainer: {
+    maxWidth: "1000px",
+    margin: "20px auto",
   },
   bottomBar: {
     textAlign: "center",
