@@ -50,7 +50,7 @@ function App() {
           <Route path="/landingpage" element={<LandingPage />} />
           <Route
             path="/"
-            element={user ? <Navigate to="/home" /> : <Login />}
+            element={user ? <Navigate to="/landingpage" /> : <Login />}
           />
         </Routes>
         <ToastContainer />
