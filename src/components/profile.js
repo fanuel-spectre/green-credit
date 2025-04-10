@@ -123,13 +123,16 @@ const styles = {
     margin: "20px",
     padding: "20px",
     border: "1px solid #ddd",
-    width: "100%",
-    maxWidth: "500px",
+    width: "85%",
+    justifyContent: "center",
+    alignItems: "center",
+    maxWidth: "500px", // Ensures a max width to avoid overflow on large screens
     marginLeft: "auto",
     marginRight: "auto",
     background: "#fff",
     borderRadius: "8px",
     boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+    overflow: "hidden", // Prevents overflow of the card content
   },
   userInfo: {
     display: "flex",
@@ -138,6 +141,7 @@ const styles = {
     gap: "20px",
     marginBottom: "10px",
     flexDirection: "row",
+    flexWrap: "wrap", // Allows wrapping on smaller screens
   },
   profileImage: {
     borderRadius: "50%",
@@ -179,6 +183,7 @@ const styles = {
     userInfo: {
       flexDirection: "column",
       textAlign: "center",
+      gap: "10px",
     },
     profileImage: {
       width: "70px",
