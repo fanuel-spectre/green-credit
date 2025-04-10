@@ -18,6 +18,7 @@ import {
 } from "react-icons/fa";
 import Login from "./components/Login";
 import Profile from "./components/profile";
+import LandingPage from "./components/LandingPage";
 import Home from "./components/Home";
 import Leaderboard from "./components/Leaderboard";
 import Activities from "./components/Activities";
@@ -37,23 +38,23 @@ function App() {
     <Router>
       <div className="App">
         {/* <div style={{ padding: 20 }}> */}
-          <NavBar />
-          <Routes>
-            <Route path="/register" element={<Register />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/leaderboard" element={<Leaderboard />} />
-            <Route path="/store" element={<Store />} />
-            <Route path="/activities" element={<Activities />} />
-            <Route
-              path="/"
-              element={user ? <Navigate to="/home" /> : <Login />}
-            />
-          </Routes>
-          <ToastContainer />
-        </div>
-      
+        <NavBar />
+        <Routes>
+          <Route path="/register" element={<Register />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/store" element={<Store />} />
+          <Route path="/activities" element={<Activities />} />
+          <Route path="/landingpage" element={<LandingPage />} />
+          <Route
+            path="/"
+            element={user ? <Navigate to="/home" /> : <Login />}
+          />
+        </Routes>
+        <ToastContainer />
+      </div>
     </Router>
   );
 }
@@ -98,7 +99,7 @@ function NavBar() {
   return (
     <div style={{ position: "sticky", top: 0, zIndex: 1000 }}>
       <nav style={styles.nav}>
-        <Link to="/" style={styles.logo}>
+        <Link to="/landingpage" style={styles.logo}>
           <img src={require("./leaf.png")} alt="Logo" style={styles.logoImg} />
           <span style={styles.logoText}>Green Credit</span>
         </Link>

@@ -1,30 +1,36 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const activities = [
   {
     title: "Plant Trees",
     icon: "🌳",
     description: "Earn tokens by planting and tracking trees.",
+    link: "/home",
   },
   {
     title: "Clean Garbage",
     icon: "🧹",
     description: "Report and clean up local waste areas.",
+    link: "/activities/clean-garbage",
   },
   {
     title: "Install Solar",
     icon: "🔋",
     description: "Install solar panels and reduce grid use.",
+    link: "/activities/install-solar",
   },
   {
     title: "Conserve Water",
     icon: "💧",
     description: "Participate in local water-saving drives.",
+    link: "/activities/conserve-water",
   },
   {
     title: "Recycle Waste",
     icon: "♻️",
     description: "Collect and recycle eligible household waste.",
+    link: "/activities/recycle-waste",
   },
 ];
 
@@ -33,13 +39,13 @@ export default function Home() {
     <div style={styles.container}>
       <h2 style={styles.heading}>Choose an Activity</h2>
       <div style={styles.grid}>
-        {activities.map((activity, index) => (
-          <div key={index} style={styles.card}>
+        {activities.map((activity) => (
+          <Link to={activity.link} key={activity.title} style={styles.card}>
             <div style={styles.icon}>{activity.icon}</div>
             <h3>{activity.title}</h3>
             <p style={styles.description}>{activity.description}</p>
             <button style={styles.button}>Start Activity</button>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
@@ -68,6 +74,7 @@ const styles = {
     padding: "20px",
     textAlign: "center",
     boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+    textDecoration: "none", // Ensure the card is clickable but no underline on text
   },
   icon: {
     fontSize: "40px",
