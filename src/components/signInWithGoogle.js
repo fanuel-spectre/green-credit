@@ -30,7 +30,7 @@ function SignInwithGoogle() {
         onClick={googleLogin}
       >
         <img
-          src={require("../google.png")}
+          src={require("../assets/google.png")}
           width={"50%"}
           alt="Google sign-in button"
         />

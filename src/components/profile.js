@@ -77,7 +77,7 @@ function Profile() {
                 <hr style={{ margin: "20px 0", border: "1px solid #ccc" }} />
                 <div style={styles.userInfo}>
                   <img
-                    src={require("../tokenn.png")}
+                    src={require("../assets/tokenn.png")}
                     alt={`${userDetails.firstName}'s profile`}
                     width="40px"
                     height="40px"

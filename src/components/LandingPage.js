@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
+import ecoImage from '../assets/plant.png';
+import recycleImg from "../assets/recycle.png";
+import bulbImg from "../assets/green_bulb.png";
 export default function LandingPage() {
   return (
     <div style={styles.container}>
@@ -22,16 +24,12 @@ export default function LandingPage() {
         <h2 style={styles.sectionTitle}>How It Works</h2>
         <div style={styles.grid}>
           <div style={styles.gridItem}>
-            <img src="tree-icon.png" alt="Plant Trees" style={styles.icon} />
+            <img src={ecoImage} alt="Plant Trees" style={styles.icon} />
             <h3>Plant Trees</h3>
             <p>Earn Green Tokens by planting trees and helping the planet.</p>
           </div>
           <div style={styles.gridItem}>
-            <img
-              src="recycle-icon.png"
-              alt="Recycle Waste"
-              style={styles.icon}
-            />
+            <img src={recycleImg} alt="Recycle Waste" style={styles.icon} />
             <h3>Recycle Waste</h3>
             <p>
               Participate in local recycling efforts to reduce waste and earn
@@ -39,7 +37,7 @@ export default function LandingPage() {
             </p>
           </div>
           <div style={styles.gridItem}>
-            <img src="solar-icon.png" alt="Install Solar" style={styles.icon} />
+            <img src= {bulbImg} alt="Install Solar" style={styles.icon} />
             <h3>Install Solar</h3>
             <p>
               Install solar panels and reduce your carbon footprint while
@@ -174,6 +172,7 @@ const styles = {
   icon: {
     fontSize: "50px",
     marginBottom: "15px",
+    height: '100px'
   },
   benefits: {
     backgroundColor: "#e6f4ea",

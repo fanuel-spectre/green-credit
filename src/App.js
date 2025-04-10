@@ -100,7 +100,7 @@ function NavBar() {
     <div style={{ position: "sticky", top: 0, zIndex: 1000 }}>
       <nav style={styles.nav}>
         <Link to="/landingpage" style={styles.logo}>
-          <img src={require("./leaf.png")} alt="Logo" style={styles.logoImg} />
+          <img src={require("../src/assets/leaf.png")} alt="Logo" style={styles.logoImg} />
           <span style={styles.logoText}>Green Credit</span>
         </Link>
 
