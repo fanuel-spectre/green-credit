@@ -1,21 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Link,
-  Navigate,
-  useLocation
-} from "react-router-dom";
+import { BrowserRouter as Router,  Route,  Routes,  Link,  Navigate,  useLocation } from "react-router-dom";
 import "./App.css";
-import {
-  FaBars,
-  FaHome,
-  FaLeaf,
-  FaTrophy,
-  FaStore,
-  FaUserCircle,
-} from "react-icons/fa";
+import { FaBars,  FaHome,  FaLeaf,  FaTrophy,  FaStore,  FaUserCircle,} from "react-icons/fa";
 import Login from "./components/Login";
 import Profile from "./components/profile";
 import LandingPage from "./components/LandingPage";
@@ -33,12 +19,12 @@ function App() {
     auth.onAuthStateChanged((user) => {
       setUser(user);
     });
-  });
+  }, []);
   return (
     <Router>
       <div className="App">
         {/* <div style={{ padding: 20 }}> */}
-        <NavBar />
+        <NavBar user= {user} />
         <Routes>
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
@@ -58,7 +44,7 @@ function App() {
     </Router>
   );
 }
-function NavBar() {
+function NavBar({user}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const menuRef = useRef(null);
@@ -96,11 +82,22 @@ function NavBar() {
     setMenuOpen(false);
   };
 
+   const redirectToLogin = (e, path) => {
+     if (!user && path !== "/login") {
+       e.preventDefault();
+       return <Navigate to="/login" />;
+     }
+   };
+
   return (
     <div style={{ position: "sticky", top: 0, zIndex: 1000 }}>
       <nav style={styles.nav}>
         <Link to="/landingpage" style={styles.logo}>
-          <img src={require("../src/assets/leaf.png")} alt="Logo" style={styles.logoImg} />
+          <img
+            src={require("../src/assets/leaf.png")}
+            alt="Logo"
+            style={styles.logoImg}
+          />
           <span style={styles.logoText}>Green Credit</span>
         </Link>
 
@@ -115,27 +112,45 @@ function NavBar() {
         ) : (
           <ul style={styles.navLinks}>
             <li>
-              <Link to="/" style={navLinkStyle}>
+              <Link
+                to="/"
+                style={navLinkStyle}>
                 Home
               </Link>
             </li>
             <li>
-              <Link to="/activities" style={navLinkStyle}>
+              <Link
+                to="/activities"
+                style={navLinkStyle}
+                onClick={(e) => redirectToLogin(e, "/activities")}
+              >
                 Activities
               </Link>
             </li>
             <li>
-              <Link to="/leaderboard" style={navLinkStyle}>
+              <Link
+                to="/leaderboard"
+                style={navLinkStyle}
+                onClick={(e) => redirectToLogin(e, "/leaderboard")}
+              >
                 Leaderboard
               </Link>
             </li>
             <li>
-              <Link to="/store" style={navLinkStyle}>
+              <Link
+                to="/store"
+                style={navLinkStyle}
+                onClick={(e) => redirectToLogin(e, "/store")}
+              >
                 Store
               </Link>
             </li>
             <li>
-              <Link to="/profile" style={navLinkStyle}>
+              <Link
+                to="/profile"
+                style={navLinkStyle}
+                onClick={(e) => redirectToLogin(e, "/profile")}
+              >
                 Profile
               </Link>
             </li>
