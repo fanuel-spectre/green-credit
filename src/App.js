@@ -13,6 +13,7 @@ import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
 import Register from "./components/Register";
 import { auth } from "./components/firebase";
+import Footer from "./components/Footer";
 function App() {
   const [user, setUser] = useState();
   useEffect(() => {
@@ -24,7 +25,7 @@ function App() {
     <Router>
       <div className="App">
         {/* <div style={{ padding: 20 }}> */}
-        <NavBar user= {user} />
+        <NavBar user={user} />
         <Routes>
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
@@ -40,6 +41,7 @@ function App() {
           />
         </Routes>
         <ToastContainer />
+        <Footer />
       </div>
     </Router>
   );
