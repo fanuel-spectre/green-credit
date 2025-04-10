@@ -1,9 +1,15 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import ecoImage from '../assets/plant.png';
+import { auth } from "./firebase"; // Make sure this path is correct
+import ecoImage from "../assets/plant.png";
 import recycleImg from "../assets/recycle.png";
 import bulbImg from "../assets/green_bulb.png";
+
 export default function LandingPage() {
+  const user = auth.currentUser;
+
+  const getStartedPath = user ? "/activities" : "/login"; // Adjust to your flow
+
   return (
     <div style={styles.container}>
       {/* Hero Section */}
@@ -14,7 +20,7 @@ export default function LandingPage() {
           Join the revolution in sustainable living by earning Green Tokens
           through green activities like tree planting and solar installations.
         </p>
-        <Link to="/get-started" style={styles.ctaButton}>
+        <Link to={getStartedPath} style={styles.ctaButton}>
           Get Started
         </Link>
       </section>
@@ -37,7 +43,7 @@ export default function LandingPage() {
             </p>
           </div>
           <div style={styles.gridItem}>
-            <img src= {bulbImg} alt="Install Solar" style={styles.icon} />
+            <img src={bulbImg} alt="Install Solar" style={styles.icon} />
             <h3>Install Solar</h3>
             <p>
               Install solar panels and reduce your carbon footprint while
@@ -78,18 +84,18 @@ export default function LandingPage() {
           Redeem them for eco-friendly products, donations, or even discounts on
           green services.
         </p>
-        <Link to="/store" style={styles.ctaButton}>
+        <Link to={user ? "/store" : "/login"} style={styles.ctaButton}>
           Shop with Green Tokens
         </Link>
       </section>
 
-      {/* Call to Action Section */}
+      {/* CTA Section */}
       <section style={styles.ctaSection}>
         <h2 style={styles.ctaTitle}>Join the Green Revolution Today!</h2>
         <p style={styles.ctaSubtitle}>
           Start earning Green Tokens and contribute to a sustainable future.
         </p>
-        <Link to="/get-started" style={styles.ctaButton}>
+        <Link to={getStartedPath} style={styles.ctaButton}>
           Get Started
         </Link>
       </section>
@@ -172,7 +178,7 @@ const styles = {
   icon: {
     fontSize: "50px",
     marginBottom: "15px",
-    height: '100px'
+    height: "100px",
   },
   benefits: {
     backgroundColor: "#e6f4ea",

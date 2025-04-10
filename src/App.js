@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { BrowserRouter as Router,  Route,  Routes,  Link,  Navigate,  useLocation } from "react-router-dom";
 import "./App.css";
-import { FaBars,  FaHome,  FaLeaf,  FaTrophy,  FaStore,  FaUserCircle,} from "react-icons/fa";
+import { FaBars,  FaHome,  FaLeaf,  FaTrophy,  FaStore,  FaUserCircle, FaSignInAlt} from "react-icons/fa";
 import Login from "./components/Login";
 import Profile from "./components/profile";
 import LandingPage from "./components/LandingPage";
@@ -50,6 +50,11 @@ function NavBar({user}) {
   const menuRef = useRef(null);
   const hamburgerRef = useRef(null);
   const location = useLocation();
+
+  const handleMenuClick = (e, path) => {
+    setMenuOpen(false);
+    redirectToLogin(e, path);
+  };
 
   // Close menu when route changes
   useEffect(() => {
@@ -112,9 +117,7 @@ function NavBar({user}) {
         ) : (
           <ul style={styles.navLinks}>
             <li>
-              <Link
-                to="/"
-                style={navLinkStyle}>
+              <Link to="/" style={navLinkStyle}>
                 Home
               </Link>
             </li>
@@ -154,6 +157,15 @@ function NavBar({user}) {
                 Profile
               </Link>
             </li>
+            <li>
+              <Link
+                to="/login"
+                style={navLinkStyle}
+                onClick={(e) => redirectToLogin(e, "/login")}
+              >
+                <FaUserCircle style={styles.userIcon} />
+              </Link>
+            </li>
           </ul>
         )}
       </nav>
@@ -173,7 +185,7 @@ function NavBar({user}) {
               <Link
                 to="/"
                 style={navLinkStyle}
-                onClick={() => setMenuOpen(false)}
+                onClick={(e) => handleMenuClick(e, "/")}
               >
                 Home
               </Link>
@@ -183,7 +195,7 @@ function NavBar({user}) {
               <Link
                 to="/activities"
                 style={navLinkStyle}
-                onClick={() => setMenuOpen(false)}
+                onClick={(e) => handleMenuClick(e, "/activities")}
               >
                 Activities
               </Link>
@@ -193,7 +205,7 @@ function NavBar({user}) {
               <Link
                 to="/leaderboard"
                 style={navLinkStyle}
-                onClick={() => setMenuOpen(false)}
+                onClick={(e) => handleMenuClick(e, "/leaderboard")}
               >
                 Leaderboard
               </Link>
@@ -203,7 +215,7 @@ function NavBar({user}) {
               <Link
                 to="/store"
                 style={navLinkStyle}
-                onClick={() => setMenuOpen(false)}
+                onClick={(e) => handleMenuClick(e, "/store")}
               >
                 Store
               </Link>
@@ -213,9 +225,19 @@ function NavBar({user}) {
               <Link
                 to="/profile"
                 style={navLinkStyle}
-                onClick={() => setMenuOpen(false)}
+                onClick={(e) => handleMenuClick(e, "/profile")}
               >
                 Profile
+              </Link>
+            </li>
+            <li style={styles.menuItem}>
+              <FaSignInAlt style={styles.icon} />
+              <Link
+                to="/login"
+                style={navLinkStyle}
+                onClick={(e) => handleMenuClick(e, "/login")}
+              >
+                Sign In
               </Link>
             </li>
           </ul>
@@ -302,6 +324,10 @@ const styles = {
   icon: {
     color: "white",
     fontSize: "18px",
+  },
+  userIcon: {
+    color: "white",
+    fontSize: "28px",
   },
 };
 
