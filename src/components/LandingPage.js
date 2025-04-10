@@ -6,6 +6,7 @@ export default function LandingPage() {
     <div style={styles.container}>
       {/* Hero Section */}
       <section style={styles.heroSection}>
+        <div style={styles.overlay}></div>
         <h1 style={styles.heroTitle}>Empower the Future with Green Energy</h1>
         <p style={styles.heroSubtitle}>
           Join the revolution in sustainable living by earning Green Tokens
@@ -107,19 +108,35 @@ const styles = {
     backgroundColor: "#f4f7f6",
   },
   heroSection: {
-    backgroundColor: "#276749",
-    color: "white",
+    position: "relative",
     textAlign: "center",
     padding: "80px 20px",
+    backgroundImage:
+      "url('https://t3.ftcdn.net/jpg/04/36/11/46/240_F_436114654_YZRH2Luax9YouhnCiZ9IlmAcxGx9t2pI.jpg')", // Set the background image URL here
+    backgroundSize: "cover", // Ensure it covers the entire section
+    backgroundPosition: "center", // Center the background image
+  },
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(39, 103, 73, 0.7)", // Green color with opacity
+    zIndex: 1,
   },
   heroTitle: {
     fontSize: "48px",
     fontWeight: "bold",
     marginBottom: "20px",
+    zIndex: 2, // Ensure text is above the overlay
+    position: "relative",
   },
   heroSubtitle: {
     fontSize: "18px",
     marginBottom: "40px",
+    zIndex: 2, // Ensure text is above the overlay
+    position: "relative",
   },
   ctaButton: {
     backgroundColor: "#f0a500",
@@ -129,6 +146,8 @@ const styles = {
     borderRadius: "5px",
     fontSize: "18px",
     textDecoration: "none",
+    zIndex: 2, // Ensure button is above the overlay
+    position: "relative",
   },
   howItWorks: {
     padding: "40px 20px",
@@ -187,50 +206,5 @@ const styles = {
   ctaSubtitle: {
     fontSize: "18px",
     marginBottom: "40px",
-  },
-
-  // Responsive Design
-  "@media (max-width: 768px)": {
-    heroTitle: {
-      fontSize: "36px",
-    },
-    heroSubtitle: {
-      fontSize: "16px",
-    },
-    sectionTitle: {
-      fontSize: "30px",
-    },
-    grid: {
-      gridTemplateColumns: "1fr", // Stack grid items on smaller screens
-    },
-    ctaButton: {
-      padding: "12px 25px",
-      fontSize: "16px",
-    },
-    benefitItem: {
-      fontSize: "16px",
-    },
-  },
-
-  "@media (max-width: 480px)": {
-    heroTitle: {
-      fontSize: "28px",
-    },
-    heroSubtitle: {
-      fontSize: "14px",
-    },
-    sectionTitle: {
-      fontSize: "24px",
-    },
-    grid: {
-      gap: "20px",
-    },
-    ctaButton: {
-      padding: "10px 20px",
-      fontSize: "14px",
-    },
-    benefitItem: {
-      fontSize: "14px",
-    },
   },
 };
