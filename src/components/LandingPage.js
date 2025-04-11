@@ -4,6 +4,7 @@ import { auth } from "./firebase"; // Make sure this path is correct
 import ecoImage from "../assets/plant.png";
 import recycleImg from "../assets/recycle.png";
 import bulbImg from "../assets/green_bulb.png";
+import { BsJustify } from "react-icons/bs";
 
 export default function LandingPage() {
   const user = auth.currentUser;

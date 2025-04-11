@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "./firebase";
 import { doc, getDoc } from "firebase/firestore";
+import Loader from "./Loader";
 
 function Profile() {
   const [userDetails, setUserDetails] = useState(null);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
 
   const fetchUserData = async () => {
     auth.onAuthStateChanged(async (user) => {
@@ -24,6 +26,7 @@ function Profile() {
         console.log("User is not logged in");
         setUserDetails(null);
       }
+      setLoading(false);
     });
   };
 
@@ -40,6 +43,7 @@ function Profile() {
       console.error("Error logging out:", error.message);
     }
   }
+  if (loading) return <Loader />;
 
   return (
     <div style={styles.container}>

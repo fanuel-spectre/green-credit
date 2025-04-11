@@ -8,11 +8,13 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { toast } from "react-toastify";
+import Loader from "./Loader";
 
 function Store() {
   const [products, setProducts] = useState([]);
   const [user, setUser] = useState(null);
   const [userTokens, setUserTokens] = useState(0);
+  const [loading, setLoading] = useState(true); 
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -23,20 +25,27 @@ function Store() {
     };
 
     const fetchUser = () => {
-      auth.onAuthStateChanged(async (currentUser) => {
-        if (currentUser) {
-          setUser(currentUser);
-          const docRef = doc(db, "Users", currentUser.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            setUserTokens(docSnap.data().redeemableTokens || 0);
+      return new Promise((resolve) => {
+        auth.onAuthStateChanged(async (currentUser) => {
+          if (currentUser) {
+            setUser(currentUser);
+            const docRef = doc(db, "Users", currentUser.uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+              setUserTokens(docSnap.data().redeemableTokens || 0);
+            }
           }
-        }
+          resolve(); // Resolve whether user is logged in or not
+        });
       });
     };
 
-    fetchProducts();
-    fetchUser();
+    const loadData = async () => {
+      await Promise.all([fetchProducts(), fetchUser()]);
+      setLoading(false); // Only hide loader when both are done
+    };
+
+   loadData();
   }, []);
 
   const handleRedeem = async (product) => {
@@ -58,7 +67,7 @@ function Store() {
       toast.error("Redemption failed");
     }
   };
-
+   if (loading) return <Loader />;
   return (
     <div style={styles.container}>
       <h2 style={styles.header}>Redeem Your Tokens</h2>

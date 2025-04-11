@@ -14,6 +14,8 @@ import { ToastContainer } from "react-toastify";
 import Register from "./components/Register";
 import { auth } from "./components/firebase";
 import Footer from "./components/Footer";
+import ScrollToTop from "./components/ScrollToTop";
+import Loader from "./components/Loader";
 function App() {
   const [user, setUser] = useState();
   useEffect(() => {
@@ -23,6 +25,7 @@ function App() {
   }, []);
   return (
     <Router>
+      <ScrollToTop />
       <div className="App">
         {/* <div style={{ padding: 20 }}> */}
         <NavBar user={user} />

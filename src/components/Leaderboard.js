@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "./firebase";
+import Loader from "./Loader";
 
 function Leaderboard() {
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -19,14 +21,16 @@ function Leaderboard() {
           (a, b) => (b.redeemableTokens || 0) - (a.redeemableTokens || 0)
         );
         setUsers(sorted);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching users:", error);
+        setLoading(false);
       }
     };
 
     fetchUsers();
   }, []);
-
+  if (loading) return <Loader />;
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>🌱 Community Leaderboard</h2>
