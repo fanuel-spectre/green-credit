@@ -6,7 +6,7 @@ const activities = [
     title: "Plant Trees",
     icon: "🌳",
     description: "Earn tokens by planting and tracking trees.",
-    link: "/home",
+    link: "/planttrees",
   },
   {
     title: "Clean Garbage",

@@ -6,6 +6,7 @@ import Login from "./components/Login";
 import Profile from "./components/profile";
 import LandingPage from "./components/LandingPage";
 import Home from "./components/Home";
+import PlantTrees from "./components/PlantTrees";
 import Leaderboard from "./components/Leaderboard";
 import Activities from "./components/Activities";
 import Store from "./components/Store";
@@ -38,6 +39,7 @@ function App() {
           <Route path="/store" element={<Store />} />
           <Route path="/activities" element={<Activities />} />
           <Route path="/landingpage" element={<LandingPage />} />
+          <Route path="/planttrees" element={<PlantTrees/>} />
           <Route
             path="/"
             element={user ? <Navigate to="/landingpage" /> : <Login />}
