@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { auth, db } from "./firebase";
+import Loader from "../components/Loader";
 import {
   addDoc,
   collection,
@@ -19,11 +20,13 @@ function PlantTrees() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [submissions, setSubmissions] = useState([]); // Track submissions
+  const [loadingSubmissions, setLoadingSubmissions] = useState(true);
 
   const user = auth.currentUser;
 
   // Fetch user submissions to track their status
   const fetchSubmissions = async () => {
+    setLoadingSubmissions(true);
     try {
       const q = query(
         collection(db, "TreeSubmissions"),
@@ -38,6 +41,8 @@ function PlantTrees() {
     } catch (error) {
       console.error("Error fetching submissions:", error);
       toast.error("Failed to load your submissions.");
+    } finally {
+      setLoadingSubmissions(false);
     }
   };
 
@@ -161,37 +166,49 @@ function PlantTrees() {
 
       <h3 style={styles.submissionsHeader}>Your Submissions</h3>
 
-      <div style={styles.submissionsContainer}>
-        {submissions.length > 0 ? (
-          submissions.map((submission) => (
-            <div key={submission.id} style={styles.submissionCard}>
-              <h4>Status: {submission.status}</h4>
-              <div style={styles.imagesContainer}>
-                <img
-                  src={submission.beforeUrl}
-                  alt="Before"
-                  style={styles.imagePreview}
-                />
-                <img
-                  src={submission.afterUrl}
-                  alt="After"
-                  style={styles.imagePreview}
-                />
+      {loadingSubmissions ? (
+        <Loader />
+      ) : (
+        <div style={styles.submissionsContainer}>
+          {submissions.length > 0 ? (
+            submissions.map((submission) => (
+              <div key={submission.id} style={styles.submissionCard}>
+                <h4>Status: {submission.status}</h4>
+                <div style={styles.imagesContainer}>
+                  <img
+                    src={submission.beforeUrl}
+                    alt="Before"
+                    style={styles.imagePreview}
+                  />
+                  <img
+                    src={submission.afterUrl}
+                    alt="After"
+                    style={styles.imagePreview}
+                  />
+                </div>
+                {submission.status === "rejected" && (
+                  <button
+                    style={styles.deleteButton}
+                    onClick={() => handleDelete(submission.id)}
+                  >
+                    Delete Submission
+                  </button>
+                )}
+                {submission.status === "pending" && (
+                  <button
+                    style={styles.deleteButton}
+                    onClick={() => handleDelete(submission.id)}
+                  >
+                    Delete Submission
+                  </button>
+                )}
               </div>
-              {submission.status === "rejected" && (
-                <button
-                  style={styles.deleteButton}
-                  onClick={() => handleDelete(submission.id)}
-                >
-                  Delete Submission
-                </button>
-              )}
-            </div>
-          ))
-        ) : (
-          <p>No submissions found.</p>
-        )}
-      </div>
+            ))
+          ) : (
+            <p>No submissions found.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

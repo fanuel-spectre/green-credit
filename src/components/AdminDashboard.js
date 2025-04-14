@@ -10,12 +10,14 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 import { toast } from "react-toastify";
+import Loader from "./Loader";
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]); // List of users
   const [selectedUser, setSelectedUser] = useState(null); // Selected user for viewing submissions
   const [userSubmissions, setUserSubmissions] = useState([]); // Submissions of the selected user
   const [loading, setLoading] = useState(true);
+  
 
   // Fetch all users who have made submissions
  const fetchUsers = async () => {
@@ -33,6 +35,8 @@ const AdminDashboard = () => {
          if (userDoc.exists()) {
            usersWithEmails.push({
              userId: userId,
+             firstName: userDoc.data().firstName,
+             lastName: userDoc.data().lastName,
              email: userDoc.data().email,
            });
            usersSet.add(userId); // Add userId to the set to avoid duplicates
@@ -41,8 +45,11 @@ const AdminDashboard = () => {
      }
 
      setUsers(usersWithEmails);
+     setLoading(false);
    } catch (error) {
      console.error("Error fetching users:", error);
+   } finally {
+     setLoading(false);
    }
  };
 
@@ -59,6 +66,7 @@ const AdminDashboard = () => {
         ...doc.data(),
       }));
       setUserSubmissions(data);
+     setLoading(false);
     } catch (error) {
       console.error("Error fetching submissions:", error);
     } finally {
@@ -80,7 +88,9 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchUsers(); // Fetch the list of users once the component is mounted
-  }, []);
+  }, 
+  []);
+  
 
   useEffect(() => {
     if (selectedUser) {
@@ -89,30 +99,35 @@ const AdminDashboard = () => {
     }
   }, [selectedUser]);
 
-  return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6 text-green-700">
-        Admin Dashboard
-      </h1>
 
+
+  return (
+    <div style={styles.container}>
+      {/* <h2 style={styles.title}>🌱 Admin Dashboard</h2> */}
       {/* Display the list of users in a table */}
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold">Select a User</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-300">
+        <h3 style={styles.title}>Select a User</h3>
+        {loading ? (
+          <div className="flex justify-center items-center my-8">
+            <Loader />
+          </div>
+        ) : (
+          <table style={styles.table}>
             <thead>
               <tr>
-                <th className="py-2 px-4 border-b text-left">User ID</th>
-                <th className="py-2 px-4 border-b text-left">Email</th>
-                <th className="py-2 px-4 border-b text-left">Name</th>
+                <th style={styles.th}>User ID</th>
+                <th style={styles.th}>Email</th>
+                <th style={styles.th}>Action</th>
               </tr>
             </thead>
             <tbody>
               {users.map((user) => (
                 <tr key={user.userId}>
-                  <td className="py-2 px-4 border-b">{user.userId}</td>
-                  <td className="py-2 px-4 border-b">{user.email}</td>
-                  <td className="py-2 px-4 border-b">
+                  <td style={styles.td}>
+                    {user.firstName} {user.lastName}
+                  </td>
+                  <td style={styles.td}>{user.email}</td>
+                  <td style={styles.td}>
                     <button
                       onClick={() => setSelectedUser(user.userId)}
                       className="text-blue-600 hover:underline"
@@ -124,14 +139,16 @@ const AdminDashboard = () => {
               ))}
             </tbody>
           </table>
-        </div>
+        )}
       </div>
 
       {/* Display user submissions (images) */}
       {selectedUser && (
         <div>
           <h2 className="text-2xl font-semibold mb-4">
-            Submissions for {selectedUser}
+            Submissions for{" "}
+            {users.find((user) => user.userId === selectedUser)?.firstName ||
+              "Unknown User"}
           </h2>
           {loading ? (
             <p>Loading submissions...</p>
@@ -255,6 +272,36 @@ const styles = {
     textDecoration: "none",
     zIndex: 2, // Ensure button is above the overlay
     position: "relative",
+  },
+
+  container: {
+    padding: "30px",
+    backgroundColor: "#e6f4ea",
+    minHeight: "100vh",
+    textAlign: "center",
+  },
+  title: {
+    fontSize: "24px",
+    marginBottom: "20px",
+    color: "#276749",
+  },
+  table: {
+    width: "100%",
+    maxWidth: "600px",
+    margin: "0 auto",
+    borderCollapse: "collapse",
+    backgroundColor: "#fff",
+  },
+  th: {
+    border: "1px solid #ccc",
+    padding: "10px",
+    backgroundColor: "#276749",
+    color: "white",
+  },
+  td: {
+    border: "1px solid #ddd",
+    padding: "10px",
+    textAlign: "center",
   },
 };
 
