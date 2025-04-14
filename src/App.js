@@ -263,7 +263,7 @@ const styles = {
     alignItems: "center",
     justifyContent: "space-between",
     flexWrap: "wrap",
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+    boxShadow: "0 4px 4px rgba(0, 0, 0, 0.1)",
   },
   logo: {
     display: "flex",

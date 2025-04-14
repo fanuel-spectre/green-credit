@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { auth, db, storage } from "./firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "./firebase"; // Ensure you're importing 'db' from firebase for Firestore
+import { addDoc, collection, serverTimestamp } from "firebase/firestore"; // Import the necessary Firebase Firestore functions
 import { toast } from "react-toastify";
+import { uploadToCloudinary } from "../utils/cloudinaryUpload"; // Import the helper function
 
 function PlantTrees() {
   const [beforeImage, setBeforeImage] = useState(null);
@@ -18,38 +18,26 @@ function PlantTrees() {
     const user = auth.currentUser;
 
     try {
-      // Upload images to Firebase Storage
-      const beforeRef = ref(
-        storage,
-        `tree-submissions/${user.uid}/${Date.now()}-before.jpg`
+      // Ensure the cloudName and uploadPreset are passed correctly
+      const beforeUrl = await uploadToCloudinary(
+        beforeImage,
+        "green_credit_upload",
+        "ds6xoprrg"
       );
-      const afterRef = ref(
-        storage,
-        `tree-submissions/${user.uid}/${Date.now()}-after.jpg`
+      const afterUrl = await uploadToCloudinary(
+        afterImage,
+        "green_credit_upload",
+        "ds6xoprrg"
       );
 
-     console.log("Uploading BEFORE image...");
-     const beforeSnap = await uploadBytes(beforeRef, beforeImage);
-     console.log("BEFORE uploaded");
-
-     console.log("Uploading AFTER image...");
-     const afterSnap = await uploadBytes(afterRef, afterImage);
-     console.log("AFTER uploaded");
-
-     console.log("Getting URLs...");
-     const beforeUrl = await getDownloadURL(beforeSnap.ref);
-     const afterUrl = await getDownloadURL(afterSnap.ref);
-
-     console.log("Saving to Firestore...");
-     await addDoc(collection(db, "TreeSubmissions"), {
-       userId: user.uid,
-       beforeUrl,
-       afterUrl,
-       status: "pending",
-       createdAt: serverTimestamp(),
-     });
-     console.log("Submitted!");
-
+      // Save metadata to Firestore
+      await addDoc(collection(db, "TreeSubmissions"), {
+        userId: user.uid,
+        beforeUrl,
+        afterUrl,
+        status: "pending", // Status set to "pending" until admin approval
+        createdAt: serverTimestamp(),
+      });
 
       toast.success("Submission uploaded! Pending approval.");
       setBeforeImage(null);
@@ -61,6 +49,7 @@ function PlantTrees() {
 
     setLoading(false);
   };
+
 
   return (
     <div style={styles.container}>
