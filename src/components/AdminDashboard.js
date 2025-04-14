@@ -116,7 +116,7 @@ const AdminDashboard = () => {
             <thead>
               <tr>
                 <th style={styles.th}>User ID</th>
-                <th style={styles.th}>Email</th>
+                {/* <th style={styles.th}>Email</th> */}
                 <th style={styles.th}>Action</th>
               </tr>
             </thead>
@@ -126,7 +126,7 @@ const AdminDashboard = () => {
                   <td style={styles.td}>
                     {user.firstName} {user.lastName}
                   </td>
-                  <td style={styles.td}>{user.email}</td>
+                  {/* <td style={styles.td}>{user.email}</td> */}
                   <td style={styles.td}>
                     <button
                       onClick={() => setSelectedUser(user.userId)}
