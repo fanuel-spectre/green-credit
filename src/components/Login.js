@@ -11,29 +11,41 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      console.log("User logged in Successfully");
-      window.location.href = "/activities";
-      toast.success("User logged in Successfully", {
-        position: "top-center",
-      });
-    } catch (error) {
-      console.log(error.message);
 
-      toast.error(error.message, {
-        position: "bottom-center",
-      });
+    const adminEmail = "asd3@gmail.com"; // example admin email
+
+    if (email === adminEmail) {
+      // Handle admin login
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        console.log("Admin logged in Successfully");
+        window.location.href = "/admindashboard"; // Redirect to admin dashboard
+        toast.success("Admin logged in Successfully", {
+          position: "top-center",
+        });
+      } catch (error) {
+        console.log(error.message);
+        toast.error(error.message, {
+          position: "bottom-center",
+        });
+      }
+    } else {
+      // Handle normal user login
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        console.log("User logged in Successfully");
+        window.location.href = "/activities"; // Redirect to normal user activities page
+        toast.success("User logged in Successfully", {
+          position: "top-center",
+        });
+      } catch (error) {
+        console.log(error.message);
+        toast.error(error.message, {
+          position: "bottom-center",
+        });
+      }
     }
   };
-  // const handleLogin = () => {
-  //   if (email && password) {
-  //     alert('Logged in successfully');
-  //     onLogin();
-  //   } else {
-  //     alert('Please fill in both fields');
-  //   }
-  // };
 
   return (
     <form onSubmit={handleSubmit}>

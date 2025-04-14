@@ -9,6 +9,7 @@ import Home from "./components/Home";
 import PlantTrees from "./components/PlantTrees";
 import Leaderboard from "./components/Leaderboard";
 import Activities from "./components/Activities";
+import AdminLogin from "./components/AdminLogin";
 import Store from "./components/Store";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
@@ -16,6 +17,7 @@ import Register from "./components/Register";
 import { auth } from "./components/firebase";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
+import AdminDashboard from "./components/AdminDashboard"; 
 import Loader from "./components/Loader";
 function App() {
   const [user, setUser] = useState();
@@ -39,7 +41,9 @@ function App() {
           <Route path="/store" element={<Store />} />
           <Route path="/activities" element={<Activities />} />
           <Route path="/landingpage" element={<LandingPage />} />
-          <Route path="/planttrees" element={<PlantTrees/>} />
+          <Route path="/planttrees" element={<PlantTrees />} />
+          <Route path="/adminlogin" element={<AdminLogin />} />
+          <Route path="/admindashboard" element={<AdminDashboard />} />
           <Route
             path="/"
             element={user ? <Navigate to="/landingpage" /> : <Login />}
