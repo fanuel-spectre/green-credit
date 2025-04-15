@@ -1,13 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "./firebase";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import Loader from "./Loader";
 
 function Profile() {
   const [userDetails, setUserDetails] = useState(null);
-  const navigate = useNavigate();
+  const [totalTokens, setTotalTokens] = useState(0);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const fetchUserData = async () => {
     auth.onAuthStateChanged(async (user) => {
@@ -15,9 +23,12 @@ function Profile() {
         try {
           const docRef = doc(db, "Users", user.uid);
           const docSnap = await getDoc(docRef);
+
           if (docSnap.exists()) {
-            setUserDetails(docSnap.data());
-            console.log(docSnap.data());
+            const data = docSnap.data();
+            setUserDetails(data);
+            console.log("User data:", data);
+            await fetchTokenAwards(user.uid);
           }
         } catch (err) {
           console.error("Error fetching user data:", err);
@@ -29,6 +40,29 @@ function Profile() {
       setLoading(false);
     });
   };
+
+  const fetchTokenAwards = async (uid) => {
+    const q = query(
+      collection(db, "TreeSubmissions"),
+      where("userId", "==", uid),
+      where("status", "==", "approved")
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    let total = 0;
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      console.log("Found doc:", data);
+
+      if (data.tokensAwarded) {
+        total += Number(data.tokensAwarded || 0);
+      }
+    });
+
+    setTotalTokens(total);
+  };
+
 
   useEffect(() => {
     fetchUserData();
@@ -43,6 +77,7 @@ function Profile() {
       console.error("Error logging out:", error.message);
     }
   }
+
   if (loading) return <Loader />;
 
   return (
@@ -78,23 +113,28 @@ function Profile() {
                     Logout
                   </button>
                 </div>
+
                 <hr style={{ margin: "20px 0", border: "1px solid #ccc" }} />
+
                 <div style={styles.userInfo}>
                   <img
                     src={require("../assets/tokenn.png")}
-                    alt={`${userDetails.firstName}'s profile`}
+                    alt="Token Icon"
                     width="40px"
                     height="40px"
                     style={styles.profileImage}
                   />
                   <div style={styles.textContainer}>
                     <p style={styles.infoText}>
-                      <strong>Token Amount: </strong>
-                      {userDetails.firstName}
+                      <strong>Total Tokens Earned: </strong>
+                      <span style={{ color: "#2F855A", fontWeight: "bold" }}>
+                        {totalTokens}
+                      </span>
                     </p>
                     <p style={styles.infoText}>
                       <strong>Redeem: </strong>
-                      {userDetails.email}
+                      {/* Placeholder for future redeem logic */}
+                      Available soon
                     </p>
                   </div>
                   <button

@@ -3,6 +3,8 @@ import {
   collection,
   getDocs,
   doc,
+  query,
+  where,
   updateDoc,
   getDoc,
 } from "firebase/firestore";
@@ -14,6 +16,7 @@ function Store() {
   const [products, setProducts] = useState([]);
   const [user, setUser] = useState(null);
   const [userTokens, setUserTokens] = useState(0);
+  const [totalTokens, setTotalTokens] = useState(0);
   const [loading, setLoading] = useState(true); 
 
   useEffect(() => {
@@ -33,12 +36,35 @@ function Store() {
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
               setUserTokens(docSnap.data().redeemableTokens || 0);
+              await fetchTokenAwards(currentUser.uid);
             }
           }
           resolve(); // Resolve whether user is logged in or not
         });
       });
     };
+
+    const fetchTokenAwards = async (uid) => {
+        const q = query(
+          collection(db, "TreeSubmissions"),
+          where("userId", "==", uid),
+          where("status", "==", "approved")
+        );
+    
+        const querySnapshot = await getDocs(q);
+    
+        let total = 0;
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          console.log("Found doc:", data);
+    
+          if (data.tokensAwarded) {
+            total += Number(data.tokensAwarded || 0);
+          }
+        });
+    
+        setTotalTokens(total);
+      };
 
     const loadData = async () => {
       await Promise.all([fetchProducts(), fetchUser()]);
@@ -72,7 +98,7 @@ function Store() {
     <div style={styles.container}>
       <h2 style={styles.header}>Redeem Your Tokens</h2>
       <p style={styles.tokenDisplay}>
-        Your Tokens: <strong>{userTokens}</strong>
+        Your Tokens: <strong>{totalTokens}</strong>
       </p>
       <div style={styles.grid}>
         {products.map((product) => (

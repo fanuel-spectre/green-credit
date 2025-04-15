@@ -7,29 +7,60 @@ function Leaderboard() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "Users"));
-        const userList = [];
-        querySnapshot.forEach((doc) => {
-          userList.push({ id: doc.id, ...doc.data() });
+useEffect(() => {
+  const fetchUsersWithTokens = async () => {
+    try {
+      const userSnapshot = await getDocs(collection(db, "Users"));
+      const submissionSnapshot = await getDocs(
+        collection(db, "TreeSubmissions")
+      );
+
+
+      // Create a token map by userId
+      const tokenMap = {};
+
+      submissionSnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.status === "approved" && data.tokensAwarded && data.userId) {
+          console.log(
+            "Submission userId:",
+            data.userId,
+            "Tokens:",
+            data.tokensAwarded
+          );
+          tokenMap[data.userId] =
+            (tokenMap[data.userId] || 0) + data.tokensAwarded;
+        }
+      });
+
+      // Build user list with tokens
+      const userList = [];
+      userSnapshot.forEach((doc) => {
+        console.log("User doc.id:", doc.id);
+        const data = doc.data();
+        const totalTokens = tokenMap[doc.id] || 0;
+        userList.push({
+          id: doc.id,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          tokens: totalTokens,
         });
+      });
 
-        // Sort users by redeemableTokens descending
-        const sorted = userList.sort(
-          (a, b) => (b.redeemableTokens || 0) - (a.redeemableTokens || 0)
-        );
-        setUsers(sorted);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        setLoading(false);
-      }
-    };
+      // Sort by tokens descending
+      const sorted = userList.sort((a, b) => b.tokens - a.tokens);
+      setUsers(sorted);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching leaderboard data:", error);
+      setLoading(false);
+    }
+  };
 
-    fetchUsers();
-  }, []);
+  fetchUsersWithTokens();
+}, []);
+
+
   if (loading) return <Loader />;
   return (
     <div style={styles.container}>
@@ -49,7 +80,7 @@ function Leaderboard() {
               <td style={styles.td}>
                 {user.firstName} {user.lastName}
               </td>
-              <td style={styles.td}>{user.redeemableTokens || 0}</td>
+              <td style={styles.td}>{user.tokens || 0}</td>
             </tr>
           ))}
         </tbody>

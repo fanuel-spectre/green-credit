@@ -17,41 +17,42 @@ const AdminDashboard = () => {
   const [selectedUser, setSelectedUser] = useState(null); // Selected user for viewing submissions
   const [userSubmissions, setUserSubmissions] = useState([]); // Submissions of the selected user
   const [loading, setLoading] = useState(true);
-  
+  const [ratings, setRatings] = useState({});
+  const [editingAwardId, setEditingAwardId] = useState(null);
 
   // Fetch all users who have made submissions
- const fetchUsers = async () => {
-   try {
-     const querySnapshot = await getDocs(collection(db, "TreeSubmissions"));
-     const usersSet = new Set(); // To ensure we have unique users
+  const fetchUsers = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "TreeSubmissions"));
+      const usersSet = new Set(); // To ensure we have unique users
 
-     // Fetch emails from the Users collection based on userId
-     const usersWithEmails = [];
-     for (let docSnap of querySnapshot.docs) {
-       const userId = docSnap.data().userId; // Assuming userId is stored for each submission
-       if (!usersSet.has(userId)) {
-         // Get user details from the Users collection
-         const userDoc = await getDoc(doc(db, "Users", userId));
-         if (userDoc.exists()) {
-           usersWithEmails.push({
-             userId: userId,
-             firstName: userDoc.data().firstName,
-             lastName: userDoc.data().lastName,
-             email: userDoc.data().email,
-           });
-           usersSet.add(userId); // Add userId to the set to avoid duplicates
-         }
-       }
-     }
+      // Fetch emails from the Users collection based on userId
+      const usersWithEmails = [];
+      for (let docSnap of querySnapshot.docs) {
+        const userId = docSnap.data().userId; // Assuming userId is stored for each submission
+        if (!usersSet.has(userId)) {
+          // Get user details from the Users collection
+          const userDoc = await getDoc(doc(db, "Users", userId));
+          if (userDoc.exists()) {
+            usersWithEmails.push({
+              userId: userId,
+              firstName: userDoc.data().firstName,
+              lastName: userDoc.data().lastName,
+              email: userDoc.data().email,
+            });
+            usersSet.add(userId); // Add userId to the set to avoid duplicates
+          }
+        }
+      }
 
-     setUsers(usersWithEmails);
-     setLoading(false);
-   } catch (error) {
-     console.error("Error fetching users:", error);
-   } finally {
-     setLoading(false);
-   }
- };
+      setUsers(usersWithEmails);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fetch submissions for a selected user
   const fetchUserSubmissions = async (userId) => {
@@ -66,7 +67,7 @@ const AdminDashboard = () => {
         ...doc.data(),
       }));
       setUserSubmissions(data);
-     setLoading(false);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching submissions:", error);
     } finally {
@@ -86,11 +87,64 @@ const AdminDashboard = () => {
     }
   };
 
+  // Update local rating state
+  const handleRatingChange = (submissionId, value) => {
+    setRatings((prev) => ({
+      ...prev,
+      [submissionId]: parseInt(value),
+    }));
+  };
+
+  // Award tokens based on rating
+  const awardTokens = async (submissionId) => {
+    const rating = ratings[submissionId];
+    if (!rating) {
+      toast.error("Please select a rating first");
+      return;
+    }
+
+    const tokens = rating * 10; // 1 star = 10 tokens, 5 stars = 50 tokens
+
+    try {
+      await updateDoc(doc(db, "TreeSubmissions", submissionId), {
+        rating,
+        tokensAwarded: tokens,
+      });
+      toast.success(`Awarded ${tokens} tokens for ${rating}-star rating`);
+      fetchUserSubmissions(selectedUser); // Refresh after update
+    } catch (error) {
+      console.error("Error awarding tokens:", error);
+      toast.error("Failed to award tokens");
+    }
+  };
+
+  const updateAward = async (submissionId) => {
+    const newRating = ratings[submissionId];
+    if (!newRating) {
+      toast.error("Please select a rating.");
+      return;
+    }
+
+    const tokens = parseInt(newRating) * 10;
+
+    try {
+      await updateDoc(doc(db, "TreeSubmissions", submissionId), {
+        rating: parseInt(newRating),
+        tokensAwarded: tokens,
+      });
+
+      toast.success("Award updated successfully!");
+      fetchUserSubmissions(selectedUser); // Refresh list
+      setEditingAwardId(null);
+    } catch (error) {
+      console.error("Error updating award:", error);
+      toast.error("Failed to update award.");
+    }
+  };
+
   useEffect(() => {
     fetchUsers(); // Fetch the list of users once the component is mounted
-  }, 
-  []);
-  
+  }, []);
 
   useEffect(() => {
     if (selectedUser) {
@@ -98,8 +152,6 @@ const AdminDashboard = () => {
       fetchUserSubmissions(selectedUser); // Fetch submissions for the selected user
     }
   }, [selectedUser]);
-
-
 
   return (
     <div style={styles.container}>
@@ -168,8 +220,8 @@ const AdminDashboard = () => {
                           src={item.beforeUrl}
                           alt="Before"
                           style={{
-                            width: "40%", // Set width for image
-                            height: "50%", // Set height for image
+                            width: "40%",
+                            height: "50%",
                             objectFit: "cover", // Ensure the image maintains aspect ratio
                             borderRadius: "4px",
                           }}
@@ -185,8 +237,8 @@ const AdminDashboard = () => {
                             src={item.afterUrl}
                             alt="After"
                             style={{
-                              width: "40%", // Set width for image
-                              height: "50%", // Set height for image
+                              width: "40%",
+                              height: "50%",
                               objectFit: "cover", // Ensure the image maintains aspect ratio
                               borderRadius: "4px",
                             }}
@@ -209,24 +261,138 @@ const AdminDashboard = () => {
                       {item.status}
                     </span>
                   </p>
-                  {item.status === "pending" && (
-                    <div className="flex gap-4">
-                      <button
-                        onClick={() => handleStatusUpdate(item.id, "approved")}
-                        style={styles.ctaButton}
-                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => handleStatusUpdate(item.id, "rejected")}
-                        style={styles.ctaButton2}
-                        className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-                      >
-                        Reject
-                      </button>
-                    </div>
+                  {item.tokensAwarded && (
+                    <>
+                      {editingAwardId === item.id ? (
+                        <>
+                          <div className="mb-2">
+                            <label
+                              htmlFor={`edit-rating-${item.id}`}
+                              className="block mb-1"
+                            >
+                              Edit Rating:
+                            </label>
+                            <select
+                              id={`edit-rating-${item.id}`}
+                              value={ratings[item.id] || item.rating}
+                              onChange={(e) =>
+                                handleRatingChange(item.id, e.target.value)
+                              }
+                              className="border px-2 py-1 rounded"
+                              style={{ padding: "5px" }}
+                            >
+                              <option value="">Select</option>
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <option key={star} value={star}>
+                                  {star} Star{star > 1 ? "s" : ""}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div style={{ padding: "5px" }}>
+                            <button
+                              style={styles.btnApproved}
+                              onClick={() => updateAward(item.id)}
+                              className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 mr-2"
+                            >
+                              Update Award
+                            </button>
+                            <button
+                              style={styles.btnRejected}
+                              onClick={() => setEditingAwardId(null)}
+                              className="text-gray-600 underline text-sm"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <div
+                          className="mb-2 text-green-700 font-semibold"
+                          style={{ padding: "5px" }}
+                        >
+                          🎉 Awarded: {item.tokensAwarded} tokens ({item.rating}
+                          ⭐)
+                          <button
+                            style={styles.btnApproved}
+                            onClick={() => {
+                              setEditingAwardId(item.id);
+                              setRatings((prev) => ({
+                                ...prev,
+                                [item.id]: item.rating,
+                              }));
+                            }}
+                            className="ml-3 text-sm text-blue-600 underline"
+                          >
+                            Edit Award
+                          </button>
+                        </div>
+                      )}
+                    </>
                   )}
+
+                  {/* Rating & Award Section (only if not already awarded) */}
+                  {item.status === "approved" && !item.tokensAwarded && (
+                    <>
+                      <div className="mb-2">
+                        <label
+                          htmlFor={`rating-${item.id}`}
+                          className="block mb-1"
+                        >
+                          Rating:
+                        </label>
+                        <select
+                          id={`rating-${item.id}`}
+                          value={ratings[item.id] || ""}
+                          onChange={(e) =>
+                            handleRatingChange(item.id, e.target.value)
+                          }
+                          className="border px-2 py-1 rounded"
+                        >
+                          <option value="">Select</option>
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <option key={star} value={star}>
+                              {star} Star{star > 1 ? "s" : ""}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Award Tokens Button */}
+                      <button
+                        onClick={() => awardTokens(item.id)}
+                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                      >
+                        Award Tokens
+                      </button>
+                    </>
+                  )}
+
+                  <div className="flex gap-2 mt-2">
+                    {["approved", "rejected", "pending"].map((statusOption) => {
+                      let style =
+                        item.status === statusOption
+                          ? styles.btnCurrent
+                          : statusOption === "approved"
+                          ? styles.btnApproved
+                          : statusOption === "rejected"
+                          ? styles.btnRejected
+                          : styles.btnPending;
+
+                      return (
+                        <button
+                          key={statusOption}
+                          onClick={() =>
+                            handleStatusUpdate(item.id, statusOption)
+                          }
+                          style={style}
+                        >
+                          {statusOption.charAt(0).toUpperCase() +
+                            statusOption.slice(1)}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               ))}
             </div>
@@ -258,7 +424,7 @@ const styles = {
     borderRadius: "5px",
     fontSize: "18px",
     textDecoration: "none",
-    zIndex: 2, // Ensure button is above the overlay
+    zIndex: 2,
     position: "relative",
   },
   ctaButton2: {
@@ -270,7 +436,7 @@ const styles = {
     borderRadius: "5px",
     fontSize: "18px",
     textDecoration: "none",
-    zIndex: 2, // Ensure button is above the overlay
+    zIndex: 2,
     position: "relative",
   },
 
@@ -302,6 +468,42 @@ const styles = {
     border: "1px solid #ddd",
     padding: "10px",
     textAlign: "center",
+  },
+  btnApproved: {
+    backgroundColor: "#2FC56D",
+    color: "white",
+    padding: "8px 16px",
+    borderRadius: "5px",
+    fontWeight: "bold",
+    margin: "0 4px",
+    cursor: "pointer",
+  },
+  btnRejected: {
+    backgroundColor: "#EC3440",
+    color: "white",
+    padding: "8px 16px",
+    borderRadius: "5px",
+    fontWeight: "bold",
+    margin: "0 4px",
+    cursor: "pointer",
+  },
+  btnPending: {
+    backgroundColor: "#D69E2E",
+    color: "white",
+    padding: "8px 16px",
+    borderRadius: "5px",
+    fontWeight: "bold",
+    margin: "0 4px",
+    cursor: "pointer",
+  },
+  btnCurrent: {
+    backgroundColor: "#2B6CB0",
+    color: "white",
+    padding: "8px 16px",
+    borderRadius: "5px",
+    fontWeight: "bold",
+    margin: "0 4px",
+    cursor: "default",
   },
 };
 
