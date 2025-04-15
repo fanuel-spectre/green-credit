@@ -314,7 +314,7 @@ const AdminDashboard = () => {
                           🎉 Awarded: {item.tokensAwarded} tokens ({item.rating}
                           ⭐)
                           <button
-                            style={styles.btnApproved}
+                            style={styles.btnApprovedd}
                             onClick={() => {
                               setEditingAwardId(item.id);
                               setRatings((prev) => ({
@@ -473,6 +473,15 @@ const styles = {
     backgroundColor: "#2FC56D",
     color: "white",
     padding: "8px 16px",
+    borderRadius: "5px",
+    fontWeight: "bold",
+    margin: "0 4px",
+    cursor: "pointer",
+  },
+  btnApprovedd: {
+    backgroundColor: "#2FC56D",
+    color: "white",
+    padding: "8px 8px",
     borderRadius: "5px",
     fontWeight: "bold",
     margin: "0 4px",
