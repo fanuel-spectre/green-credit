@@ -19,6 +19,8 @@ function PlantTrees() {
   const [afterImage, setAfterImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [location, setLocation] = useState("");
+  const [fetchingLocation, setFetchingLocation] = useState(false);
   const [submissions, setSubmissions] = useState([]); // Track submissions
   const [loadingSubmissions, setLoadingSubmissions] = useState(true);
 
@@ -44,6 +46,29 @@ function PlantTrees() {
     } finally {
       setLoadingSubmissions(false);
     }
+  };
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setFetchingLocation(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setLocation(
+          `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`
+        );
+        setFetchingLocation(false);
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        toast.error("Failed to retrieve location.");
+        setFetchingLocation(false);
+      }
+    );
   };
 
   // Handle file upload
@@ -88,6 +113,7 @@ function PlantTrees() {
         userId: user.uid,
         beforeUrl,
         afterUrl,
+        location,
         status: "pending",
         createdAt: serverTimestamp(),
       });
@@ -159,6 +185,23 @@ function PlantTrees() {
       </div>
 
       {error && <p style={styles.error}>{error}</p>}
+      <div style={styles.uploadBox}>
+        <label style={styles.label}>Location (optional)</label>
+        <input
+          type="text"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          placeholder="Enter location manually or use GPS"
+          style={styles.input}
+        />
+        <button
+          style={styles.gpsButton}
+          onClick={handleGetCurrentLocation}
+          disabled={fetchingLocation}
+        >
+          {fetchingLocation ? "Fetching..." : "📍 Use My Location"}
+        </button>
+      </div>
 
       <button style={styles.button} onClick={handleUpload} disabled={loading}>
         {loading ? "Uploading..." : "Submit for Approval"}
@@ -174,6 +217,9 @@ function PlantTrees() {
             submissions.map((submission) => (
               <div key={submission.id} style={styles.submissionCard}>
                 <h4>Status: {submission.status}</h4>
+                <p>
+                  <strong>Location:</strong> {submission.location || "N/A"}
+                </p>
                 <div style={styles.imagesContainer}>
                   <img
                     src={submission.beforeUrl}
@@ -297,6 +343,25 @@ const styles = {
     marginTop: "15px",
     cursor: "pointer",
     transition: "background-color 0.3s",
+  },
+  input: {
+    padding: "10px",
+    width: "80%",
+    maxWidth: "300px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+    fontSize: "14px",
+  },
+  gpsButton: {
+    marginTop: "10px",
+    margin: "5px",
+    padding: "8px 14px",
+    borderRadius: "6px",
+    border: "none",
+    backgroundColor: "#2F855A",
+    color: "white",
+    cursor: "pointer",
+    fontSize: "14px",
   },
 };
 
