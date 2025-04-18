@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { db, auth } from "./firebase";
 import {
   collection,
@@ -8,6 +8,8 @@ import {
   serverTimestamp,
   onSnapshot,
   where,
+  doc,
+  getDoc,
 } from "firebase/firestore";
 
 const AdminChat = () => {
@@ -16,22 +18,35 @@ const AdminChat = () => {
   const [newMessage, setNewMessage] = useState("");
   const [users, setUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const bottomRef = useRef(null);
 
-  // Fetch all users that have sent messages in the chat
+  // Fetch messages and unique userIds from messages
   useEffect(() => {
     if (!user) return;
 
     const q = query(collection(db, "Messages"), orderBy("createdAt", "asc"));
-    const unsubscribeMessages = onSnapshot(q, (snapshot) => {
+    const unsubscribeMessages = onSnapshot(q, async (snapshot) => {
       const msgs = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
       setMessages(msgs);
 
-      // Get the list of unique users who have sent messages
-      const uniqueUsers = [...new Set(msgs.map((msg) => msg.userId))];
-      setUsers(uniqueUsers);
+      // Get unique userIds from messages
+      const uniqueUserIds = [...new Set(msgs.map((msg) => msg.userId))];
+
+      // Fetch first names from Users collection
+      const userPromises = uniqueUserIds.map(async (uid) => {
+        const userRef = doc(db, "Users", uid);
+        const userSnap = await getDoc(userRef);
+        return {
+          userId: uid,
+          firstName: userSnap.exists() ? userSnap.data().firstName : "Unknown",
+        };
+      });
+
+      const userList = await Promise.all(userPromises);
+      setUsers(userList);
     });
 
     return () => unsubscribeMessages();
@@ -57,27 +72,33 @@ const AdminChat = () => {
     return () => unsubscribeMessages();
   }, [selectedUserId]);
 
-  // Send a message to Firestore
+useEffect(() => {
+  const timeout = setTimeout(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, 100);
+  return () => clearTimeout(timeout);
+}, [messages]);
+
+
+
+
   const sendMessage = async () => {
     if (newMessage.trim() === "") return;
 
     const messageData = {
-      userId: selectedUserId, // Reply to the selected user
+      userId: selectedUserId,
       sender: "admin",
       message: newMessage.trim(),
       createdAt: serverTimestamp(),
     };
 
-    // Optimistically update the UI (immediately show the message)
     setMessages((prevMessages) => [
       ...prevMessages,
-      { ...messageData, createdAt: new Date() }, // Add message with temporary timestamp
+      { ...messageData, createdAt: new Date() },
     ]);
 
-    // Send the message to Firestore
     await addDoc(collection(db, "Messages"), messageData);
-
-    setNewMessage(""); // Clear the input after sending
+    setNewMessage("");
   };
 
   return (
@@ -88,17 +109,17 @@ const AdminChat = () => {
       <div style={styles.userList}>
         <h4>Users:</h4>
         <div style={styles.buttonContainer}>
-          {users.map((userId) => (
+          {users.map((u) => (
             <button
-              key={userId}
-              onClick={() => setSelectedUserId(userId)}
+              key={u.userId}
+              onClick={() => setSelectedUserId(u.userId)}
               style={{
                 ...styles.userButton,
                 backgroundColor:
-                  selectedUserId === userId ? "#68d391" : "#edf2f7",
+                  selectedUserId === u.userId ? "#68d391" : "#edf2f7",
               }}
             >
-              {userId}
+              {u.firstName}
             </button>
           ))}
         </div>
@@ -115,10 +136,11 @@ const AdminChat = () => {
               backgroundColor: msg.sender === "admin" ? "#dcfce7" : "#e2e8f0",
             }}
           >
-            <strong>{msg.sender === "admin" ? "Admin" : "You"}:</strong> <br />
+            <strong>{msg.sender === "admin" ? "Admin" : "User"}:</strong> <br />
             {msg.message}
           </div>
         ))}
+        <div ref={bottomRef} />
       </div>
 
       {/* Message input */}
@@ -153,7 +175,7 @@ const styles = {
     padding: "10px",
     border: "1px solid #ccc",
     borderRadius: "8px",
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#276749",
   },
   buttonContainer: {
     display: "flex",
@@ -169,17 +191,18 @@ const styles = {
     width: "100%",
   },
   chatBox: {
-    minHeight: "300px",
-    maxHeight: "400px",
-    overflowY: "scroll",
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-    backgroundColor: "#f7fafc",
-    padding: "10px",
-    borderRadius: "8px",
-    marginBottom: "15px",
-  },
+  minHeight: "300px",
+  maxHeight: "400px",
+  overflowY: "auto", // ← changed from scroll to auto
+  display: "flex",
+  flexDirection: "column",
+  gap: "10px",
+  backgroundColor: "#f7fafc",
+  padding: "10px",
+  borderRadius: "8px",
+  marginBottom: "15px",
+  position: "relative", // ← crucial for scrollIntoView to work inside it
+},
   message: {
     padding: "10px",
     borderRadius: "8px",
