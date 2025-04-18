@@ -11,49 +11,57 @@ import {
 } from "firebase/firestore";
 
 function UserChat() {
-  const user = auth.currentUser;
+  const user = auth.currentUser; // Get the logged-in user
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
 
   useEffect(() => {
     if (!user) return;
 
+    // Firestore query to fetch all messages for this user (both admin and user)
     const q = query(
       collection(db, "Messages"),
       where("userId", "==", user.uid),
-      orderBy("createdAt", "asc")
+      orderBy("createdAt", "asc") // Ensure messages are sorted in the correct order
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const msgs = snapshot.docs.map((doc) => ({
-        id: doc.id, // 🔑 include ID for rendering
+        id: doc.id, // Include ID for rendering
         ...doc.data(),
       }));
-      setMessages(msgs);
+      setMessages(msgs); // Update the state with fetched messages
     });
 
-    return () => unsubscribe();
-  }, [user?.uid]); // 👈 ensures effect runs when user is defined
+    return () => unsubscribe(); // Clean up the listener when component unmounts
+  }, [user?.uid]); // Re-run effect only when user changes
 
+  const sendMessage = async () => {
+    if (newMessage.trim() === "") return;
+
+    const messageData = {
+      userId: user.uid,
+      sender: "user", // Mark the sender as "user"
+      message: newMessage.trim(),
+      createdAt: serverTimestamp(),
+    };
+
+    // Optimistically update the UI by adding the new message
+    setMessages((prevMessages) => [...prevMessages, messageData]);
+
+    // Send the message to Firestore
+    await addDoc(collection(db, "Messages"), messageData);
+
+    setNewMessage(""); // Clear the input
+  };
+
+  // Scroll the chat box to the bottom when new messages are added
   useEffect(() => {
     const chatBox = document.getElementById("chat-box");
     if (chatBox) {
       chatBox.scrollTop = chatBox.scrollHeight;
     }
-  }, [messages]);
-
-  const sendMessage = async () => {
-    if (newMessage.trim() === "") return;
-
-    await addDoc(collection(db, "Messages"), {
-      userId: user.uid,
-      sender: "user",
-      message: newMessage.trim(),
-      createdAt: serverTimestamp(),
-    });
-
-    setNewMessage("");
-  };
+  }, [messages]); // This will run whenever messages change
 
   return (
     <div style={styles.container}>

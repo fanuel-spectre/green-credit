@@ -1,37 +1,43 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import { db, auth } from "./firebase";
 import {
   collection,
   query,
   orderBy,
-  where,
-  onSnapshot,
   addDoc,
   serverTimestamp,
+  onSnapshot,
+  where,
 } from "firebase/firestore";
-import { db } from "./firebase";
 
-function AdminChatDashboard() {
+const AdminChat = () => {
+  const user = auth.currentUser; // Admin logged in
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
   const [users, setUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [reply, setReply] = useState("");
 
-  // Fetch unique userIds who have sent messages
+  // Fetch all users that have sent messages in the chat
   useEffect(() => {
-    const q = query(collection(db, "Messages"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const userSet = new Set();
-      snapshot.docs.forEach((doc) => {
-        const data = doc.data();
-        if (data.userId) userSet.add(data.userId);
-      });
-      setUsers([...userSet]);
+    if (!user) return;
+
+    const q = query(collection(db, "Messages"), orderBy("createdAt", "asc"));
+    const unsubscribeMessages = onSnapshot(q, (snapshot) => {
+      const msgs = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setMessages(msgs);
+
+      // Get the list of unique users who have sent messages
+      const uniqueUsers = [...new Set(msgs.map((msg) => msg.userId))];
+      setUsers(uniqueUsers);
     });
 
-    return () => unsubscribe();
-  }, []);
+    return () => unsubscribeMessages();
+  }, [user]);
 
-  // Fetch messages for selected user
+  // Fetch messages for the selected user
   useEffect(() => {
     if (!selectedUserId) return;
 
@@ -40,130 +46,139 @@ function AdminChatDashboard() {
       where("userId", "==", selectedUserId),
       orderBy("createdAt", "asc")
     );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const msgs = snapshot.docs.map((doc) => doc.data());
+    const unsubscribeMessages = onSnapshot(q, (snapshot) => {
+      const msgs = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setMessages(msgs);
     });
 
-    return () => unsubscribe();
+    return () => unsubscribeMessages();
   }, [selectedUserId]);
 
-  const sendReply = async () => {
-    if (reply.trim() === "" || !selectedUserId) return;
+  // Send a message to Firestore
+  const sendMessage = async () => {
+    if (newMessage.trim() === "") return;
 
-    await addDoc(collection(db, "Messages"), {
-      userId: selectedUserId,
+    const messageData = {
+      userId: selectedUserId, // Reply to the selected user
       sender: "admin",
-      message: reply.trim(),
+      message: newMessage.trim(),
       createdAt: serverTimestamp(),
-    });
+    };
 
-    setReply("");
+    // Optimistically update the UI (immediately show the message)
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { ...messageData, createdAt: new Date() }, // Add message with temporary timestamp
+    ]);
+
+    // Send the message to Firestore
+    await addDoc(collection(db, "Messages"), messageData);
+
+    setNewMessage(""); // Clear the input after sending
   };
 
   return (
     <div style={styles.container}>
-      <h2>📬 Admin Chat Dashboard</h2>
-      <div style={styles.dashboard}>
-        <div style={styles.sidebar}>
-          <h4>Users</h4>
-          {users.map((uid) => (
+      <h3>💬 Chat with Users</h3>
+
+      {/* Render user buttons */}
+      <div style={styles.userList}>
+        <h4>Users:</h4>
+        <div style={styles.buttonContainer}>
+          {users.map((userId) => (
             <button
-              key={uid}
-              onClick={() => setSelectedUserId(uid)}
+              key={userId}
+              onClick={() => setSelectedUserId(userId)}
               style={{
                 ...styles.userButton,
-                backgroundColor: selectedUserId === uid ? "#68d391" : "#edf2f7",
+                backgroundColor:
+                  selectedUserId === userId ? "#68d391" : "#edf2f7",
               }}
             >
-              {uid}
+              {userId}
             </button>
           ))}
         </div>
-
-        <div style={styles.chatArea}>
-          <div style={styles.chatBox}>
-            {messages.map((msg, index) => (
-              <div
-                key={index}
-                style={{
-                  ...styles.message,
-                  alignSelf: msg.sender === "admin" ? "flex-end" : "flex-start",
-                  backgroundColor:
-                    msg.sender === "admin" ? "#c6f6d5" : "#e2e8f0",
-                }}
-              >
-                <strong>{msg.sender === "admin" ? "Admin" : "User"}:</strong>{" "}
-                {msg.message}
-              </div>
-            ))}
-          </div>
-
-          {selectedUserId && (
-            <div style={styles.inputBox}>
-              <input
-                type="text"
-                value={reply}
-                onChange={(e) => setReply(e.target.value)}
-                placeholder="Type your reply..."
-                style={styles.input}
-              />
-              <button onClick={sendReply} style={styles.sendButton}>
-                Reply
-              </button>
-            </div>
-          )}
-        </div>
       </div>
+
+      {/* Chat box */}
+      <div id="chat-box" style={styles.chatBox}>
+        {messages.map((msg, index) => (
+          <div
+            key={index}
+            style={{
+              ...styles.message,
+              alignSelf: msg.sender === "admin" ? "flex-end" : "flex-start",
+              backgroundColor: msg.sender === "admin" ? "#dcfce7" : "#e2e8f0",
+            }}
+          >
+            <strong>{msg.sender === "admin" ? "Admin" : "You"}:</strong> <br />
+            {msg.message}
+          </div>
+        ))}
+      </div>
+
+      {/* Message input */}
+      {selectedUserId && (
+        <div style={styles.inputBox}>
+          <input
+            type="text"
+            placeholder="Type your reply..."
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            style={styles.input}
+          />
+          <button onClick={sendMessage} style={styles.sendButton}>
+            Send
+          </button>
+        </div>
+      )}
     </div>
   );
-}
+};
 
 const styles = {
   container: {
     padding: "20px",
-    backgroundColor: "#f0fff4",
-    minHeight: "100vh",
-  },
-  dashboard: {
+    maxWidth: "800px",
+    margin: "0 auto",
     display: "flex",
-    gap: "20px",
+    flexDirection: "column",
   },
-  sidebar: {
-    width: "200px",
-    backgroundColor: "#f7fafc",
+  userList: {
+    marginBottom: "20px",
     padding: "10px",
+    border: "1px solid #ccc",
     borderRadius: "8px",
-    height: "500px",
-    overflowY: "auto",
+    backgroundColor: "#f0f0f0",
+  },
+  buttonContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
   },
   userButton: {
-    display: "block",
-    width: "100%",
     padding: "10px",
-    marginBottom: "5px",
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
     textAlign: "left",
-  },
-  chatArea: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
+    width: "100%",
   },
   chatBox: {
-    flex: 1,
-    backgroundColor: "#ffffff",
-    padding: "10px",
-    borderRadius: "8px",
-    overflowY: "auto",
-    height: "400px",
+    minHeight: "300px",
+    maxHeight: "400px",
+    overflowY: "scroll",
     display: "flex",
     flexDirection: "column",
     gap: "10px",
-    border: "1px solid #ccc",
+    backgroundColor: "#f7fafc",
+    padding: "10px",
+    borderRadius: "8px",
+    marginBottom: "15px",
   },
   message: {
     padding: "10px",
@@ -174,7 +189,6 @@ const styles = {
   inputBox: {
     display: "flex",
     gap: "10px",
-    marginTop: "10px",
   },
   input: {
     flex: 1,
@@ -192,4 +206,4 @@ const styles = {
   },
 };
 
-export default AdminChatDashboard;
+export default AdminChat;
