@@ -6,6 +6,14 @@ import Loader from "./Loader";
 function Leaderboard() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const getBadgeByTokens = (tokens) => {
+  if (tokens >= 5000) return { emoji: "💎", label: "Premium", color: "#4B0082" };
+  if (tokens >= 3000) return { emoji: "🥇", label: "Gold", color: "#FFD700" };
+  if (tokens >= 1500) return { emoji: "🥈", label: "Silver", color: "#C0C0C0" };
+  if (tokens >= 500)  return { emoji: "🥉", label: "Bronze", color: "#CD7F32" };
+  return { emoji: "🌱", label: "Starter", color: "#228B22" };
+};
+
 
 useEffect(() => {
   const fetchUsersWithTokens = async () => {
@@ -71,18 +79,31 @@ useEffect(() => {
             <th style={styles.th}>Rank</th>
             <th style={styles.th}>Name</th>
             <th style={styles.th}>Tokens</th>
+            <th style={styles.th}>Badge</th>
           </tr>
         </thead>
         <tbody>
-          {users.map((user, index) => (
-            <tr key={user.id}>
-              <td style={styles.td}>{index + 1}</td>
-              <td style={styles.td}>
-                {user.firstName} {user.lastName}
-              </td>
-              <td style={styles.td}>{user.tokens || 0}</td>
-            </tr>
-          ))}
+          {users.map((user, index) => {
+            const badge = getBadgeByTokens(user.tokens || 0);
+            return (
+              <tr key={user.id}>
+                <td style={styles.td}>{index + 1}</td>
+                <td style={styles.td}>
+                  {user.firstName} {user.lastName}
+                </td>
+                <td style={styles.td}>{user.tokens || 0}</td>
+                <td
+                  style={{
+                    ...styles.td,
+                    color: badge.color,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {badge.emoji} {badge.label}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
