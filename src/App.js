@@ -10,6 +10,8 @@ import PlantTrees from "./components/PlantTrees";
 import Leaderboard from "./components/Leaderboard";
 import Activities from "./components/Activities";
 import AdminLogin from "./components/AdminLogin";
+import UserChat from "./components/UserChat";
+import AdminChat from "./components/AdminChat";
 import Store from "./components/Store";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
@@ -19,6 +21,7 @@ import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import AdminDashboard from "./components/AdminDashboard"; 
 import Loader from "./components/Loader";
+import FloatingChatButton from "./components/FloatingChatButton";
 function App() {
   const [user, setUser] = useState();
   useEffect(() => {
@@ -44,12 +47,15 @@ function App() {
           <Route path="/planttrees" element={<PlantTrees />} />
           <Route path="/adminlogin" element={<AdminLogin />} />
           <Route path="/admindashboard" element={<AdminDashboard />} />
+          <Route path="/adminchat" element={<AdminChat />} />
+          <Route path="/userchat" element={<UserChat />} />
           <Route
             path="/"
             element={user ? <Navigate to="/landingpage" /> : <Login />}
           />
         </Routes>
         <ToastContainer />
+        <FloatingChatButton />
         <Footer />
       </div>
     </Router>

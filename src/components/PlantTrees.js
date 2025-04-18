@@ -121,6 +121,7 @@ function PlantTrees() {
       toast.success("Submission uploaded! Pending approval.");
       setBeforeImage(null);
       setAfterImage(null);
+      setLocation("");
       fetchSubmissions(); // Refresh submissions after upload
     } catch (error) {
       console.error("Upload failed:", error);
