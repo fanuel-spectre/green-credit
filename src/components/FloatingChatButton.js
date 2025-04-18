@@ -1,17 +1,14 @@
 // components/FloatingChatButton.js
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  FaHome
-} from "react-icons/fa";
-
+import { ImBubbles2 } from "react-icons/im";
 const FloatingChatButton = () => {
   const navigate = useNavigate();
 
   return (
     <button onClick={() => navigate("/userchat")} style={styles.button}>
       {/* <MessageCircle size={24} color="white" /> */}
-      <FaHome style={styles.userIcon} />
+      <ImBubbles2 style={styles.icon} />
     </button>
   );
 };
@@ -35,7 +32,7 @@ const styles = {
   },
   icon: {
     color: "white",
-    fontSize: "18px",
+    fontSize: "24px",
   },
 };
 
