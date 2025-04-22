@@ -5,8 +5,16 @@ function CartPage({ setCart, userTokens }) {
   const location = useLocation();
   const [deliveryOption, setDeliveryOption] = useState(false);
   const [deliveryCost, setDeliveryCost] = useState(0);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
 
-  // Load cart from localStorage or use location.state
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 600);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const [cart, setLocalCart] = useState(() => {
     const stored = localStorage.getItem("cart");
     if (stored) return JSON.parse(stored);
@@ -64,8 +72,22 @@ function CartPage({ setCart, userTokens }) {
         <p style={styles.empty}>Your cart is empty.</p>
       ) : (
         cart.map((item) => (
-          <div key={item.id} style={styles.card}>
-            <img src={item.image} alt={item.name} style={styles.image} />
+          <div
+            key={item.id}
+            style={{
+              ...styles.card,
+              flexDirection: isMobile ? "column" : "row",
+              textAlign: isMobile ? "center" : "left",
+            }}
+          >
+            <img
+              src={item.image}
+              alt={item.name}
+              style={{
+                ...styles.image,
+                margin: isMobile ? "0 auto 10px" : "0 20px 0 0",
+              }}
+            />
             <div style={styles.details}>
               <h3>{item.name}</h3>
               <p>{item.description}</p>
@@ -75,7 +97,13 @@ function CartPage({ setCart, userTokens }) {
               <p>
                 <strong>Quantity:</strong> {item.quantity}
               </p>
-              <div style={styles.buttonGroup}>
+              <div
+                style={{
+                  ...styles.buttonGroup,
+                  justifyContent: isMobile ? "center" : "flex-end",
+                  marginLeft: isMobile ? "0" : "260px",
+                }}
+              >
                 <button
                   onClick={() => handleQuantityChange(item.id, "increase")}
                 >
@@ -149,7 +177,6 @@ const styles = {
     height: "100px",
     borderRadius: "8px",
     objectFit: "cover",
-    marginRight: "20px",
   },
   details: {
     flex: 1,
@@ -158,7 +185,7 @@ const styles = {
     marginTop: "10px",
     display: "flex",
     gap: "10px",
-    marginLeft: "260px",
+    flexWrap: "wrap",
   },
   delivery: {
     marginTop: "30px",
