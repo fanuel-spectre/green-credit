@@ -1,16 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { db, auth } from "./firebase";
-import {
-  collection,
-  query,
-  orderBy,
-  addDoc,
-  serverTimestamp,
-  onSnapshot,
-  where,
-  doc,
-  getDoc,
-} from "firebase/firestore";
+import {collection,query,orderBy,addDoc,serverTimestamp,onSnapshot,where,doc,getDoc,} from "firebase/firestore";
 
 const AdminChat = () => {
   const user = auth.currentUser; // Admin logged in

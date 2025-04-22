@@ -16,6 +16,7 @@ import Store from "./components/Store";
 import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
 import Register from "./components/Register";
+import CartPage from "./components/Cartpage";
 import { auth } from "./components/firebase";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
@@ -49,6 +50,7 @@ function App() {
           <Route path="/admindashboard" element={<AdminDashboard />} />
           <Route path="/adminchat" element={<AdminChat />} />
           <Route path="/userchat" element={<UserChat />} />
+          <Route path="/cart" element={<CartPage />} />
           <Route
             path="/"
             element={user ? <Navigate to="/landingpage" /> : <Login />}
