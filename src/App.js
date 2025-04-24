@@ -1,7 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { BrowserRouter as Router,  Route,  Routes,  Link,  Navigate,  useLocation } from "react-router-dom";
 import "./App.css";
-import { FaBars,  FaHome,  FaLeaf,  FaTrophy,  FaStore,  FaUserCircle, FaSignInAlt} from "react-icons/fa";
+import {
+  FaBars,
+  FaHome,
+  FaLeaf,
+  FaTrophy,
+  FaStore,
+  FaUserCircle,
+  FaSignInAlt,
+  FaShopify,
+} from "react-icons/fa";
 import Login from "./components/Login";
 import Profile from "./components/profile";
 import LandingPage from "./components/LandingPage";
@@ -19,8 +28,10 @@ import Register from "./components/Register";
 import CartPage from "./components/Cartpage";
 import { auth } from "./components/firebase";
 import Footer from "./components/Footer";
+import OrderConfirmation from "./components/OrderConfirmation";
 import ScrollToTop from "./components/ScrollToTop";
 import AdminDashboard from "./components/AdminDashboard"; 
+import Orders from "./components/Orders"; 
 import Loader from "./components/Loader";
 import FloatingChatButton from "./components/FloatingChatButton";
 function App() {
@@ -51,6 +62,8 @@ function App() {
           <Route path="/adminchat" element={<AdminChat />} />
           <Route path="/userchat" element={<UserChat />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route path="/orderconfirmation" element={<OrderConfirmation />} />
+          <Route path="/orders" element={<Orders />} />
           <Route
             path="/"
             element={user ? <Navigate to="/landingpage" /> : <Login />}
@@ -169,6 +182,15 @@ function NavBar({user}) {
             </li>
             <li>
               <Link
+                to="/orders"
+                style={navLinkStyle}
+                onClick={(e) => redirectToLogin(e, "/orders")}
+              >
+                Redeemed
+              </Link>
+            </li>
+            <li>
+              <Link
                 to="/profile"
                 style={navLinkStyle}
                 onClick={(e) => redirectToLogin(e, "/profile")}
@@ -237,6 +259,16 @@ function NavBar({user}) {
                 onClick={(e) => handleMenuClick(e, "/store")}
               >
                 Store
+              </Link>
+            </li>
+            <li style={styles.menuItem}>
+              <FaShopify style={styles.icon} />
+              <Link
+                to="/orders"
+                style={navLinkStyle}
+                onClick={(e) => handleMenuClick(e, "/orders")}
+              >
+                Redeemed
               </Link>
             </li>
             <li style={styles.menuItem}>

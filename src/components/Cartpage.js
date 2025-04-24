@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { getAuth } from "firebase/auth";
+import { db } from "./firebase";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
 function CartPage({ setCart, userTokens }) {
   const location = useLocation();
   const [deliveryOption, setDeliveryOption] = useState(false);
   const [deliveryCost, setDeliveryCost] = useState(0);
+  const [locationInput, setLocationInput] = useState(""); // 👈 new
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleResize = () => {
@@ -58,15 +64,76 @@ function CartPage({ setCart, userTokens }) {
     return total + (deliveryOption ? deliveryCost : 0);
   };
 
-  const handleCheckout = () => {
-    alert("Proceeding to checkout!");
+const handleCheckout = async () => {
+  const auth = getAuth();
+  const user = auth.currentUser;
+
+  if (!user) {
+    alert("You must be logged in to place an order.");
+    return;
+  }
+
+  if (deliveryOption && !locationInput.trim()) {
+    alert("Please enter a delivery location.");
+    return;
+  }
+
+  const orderData = {
+    userId: user.uid,
+    cart,
+    deliveryOption,
+    deliveryLocation: deliveryOption ? locationInput : null,
+    total: calculateTotal(),
+    createdAt: serverTimestamp(),
+  };
+
+  try {
+    await addDoc(collection(db, "orders"), orderData);
     setLocalCart([]);
     localStorage.removeItem("cart");
+    setLocationInput("");
+    setDeliveryOption(false);
+    setDeliveryCost(0);
+    navigate("/orderconfirmation"); // 🚀 Redirect after success
+  } catch (error) {
+    console.error("Error saving order:", error);
+    alert("Failed to place order. Try again.");
+  }
+};
+
+  const fetchCurrentLocation = async () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+          const address = data.display_name || `${latitude}, ${longitude}`;
+          setLocationInput(address);
+        } catch (error) {
+          console.error("Error fetching address:", error);
+          setLocationInput(`${latitude}, ${longitude}`);
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        alert("Unable to fetch location. Please allow permission.");
+      }
+    );
   };
+
 
   return (
     <div style={styles.cartPage}>
-      <h2 style={styles.heading}>🛒 Your Shopping Cart</h2>
+      <h2 style={styles.heading}>🛒 Your Cart</h2>
 
       {cart.length === 0 ? (
         <p style={styles.empty}>Your cart is empty.</p>
@@ -136,6 +203,21 @@ function CartPage({ setCart, userTokens }) {
         </label>
       </div>
 
+      {deliveryOption && (
+        <>
+          <input
+            style={styles.locationInput}
+            type="text"
+            placeholder="Enter delivery location..."
+            value={locationInput}
+            onChange={(e) => setLocationInput(e.target.value)}
+          />
+          <button style={styles.locationBtn} onClick={fetchCurrentLocation}>
+            📍 Use Current Location
+          </button>
+        </>
+      )}
+
       <h3 style={styles.total}>Total: {calculateTotal()} Tokens</h3>
 
       <button
@@ -191,6 +273,13 @@ const styles = {
     marginTop: "30px",
     marginBottom: "10px",
   },
+  locationInput: {
+    width: "100%",
+    padding: "10px",
+    marginBottom: "15px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+  },
   total: {
     fontSize: "20px",
     fontWeight: "bold",
@@ -204,6 +293,15 @@ const styles = {
     borderRadius: "6px",
     cursor: "pointer",
     marginTop: "10px",
+  },
+  locationBtn: {
+    padding: "8px 12px",
+    marginTop: "8px",
+    backgroundColor: "#2196F3",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
   },
 };
 

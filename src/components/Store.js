@@ -178,7 +178,7 @@ useEffect(() => {
           ))}
         </div>
 
-        {cart.length > 0 && (
+        {/* {cart.length > 0 && (
           <div style={styles.cartBox}>
             <h3>Cart Summary</h3>
             <ul>
@@ -195,7 +195,7 @@ useEffect(() => {
               Checkout
             </button>
           </div>
-        )}
+        )} */}
 
         {/* 👇👇👇 Add this to show the floating button */}
         {cart.length > 0 && <FloatingCartButton cart={cart} />}
