@@ -7,36 +7,48 @@ import {
   addDoc,
   query,
   Timestamp,
+  where,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 function GarbageEventsPage() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [registrations, setRegistrations] = useState([]);
   const auth = getAuth();
   const user = auth.currentUser;
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const q = query(collection(db, "GarbageEvents"));
-        const snapshot = await getDocs(q);
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setEvents(data);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-        alert("Failed to load events.");
-      } finally {
-        setLoading(false);
-      }
-    };
+useEffect(() => {
+  const fetchEventsAndRegistrations = async () => {
+    try {
+      const eventsSnapshot = await getDocs(collection(db, "GarbageEvents"));
+      const eventsData = eventsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setEvents(eventsData);
 
-    fetchEvents();
-  }, []);
+      if (user) {
+        const regQuery = query(
+          collection(db, "Registrations"),
+          where("userId", "==", user.uid)
+        );
+        const regSnapshot = await getDocs(regQuery);
+        const regData = regSnapshot.docs.map((doc) => doc.data().eventId);
+        setRegistrations(regData);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      alert("Failed to load data.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchEventsAndRegistrations();
+}, [user]);
+
 
   const handleRegister = async (eventId) => {
     if (!user) return alert("Please log in first.");
@@ -47,6 +59,7 @@ function GarbageEventsPage() {
         status: "registered",
         registeredAt: Timestamp.now(),
       });
+      setRegistrations((prev) => [...prev, eventId]);
       alert("Successfully registered!");
     } catch (error) {
       console.error("Registration error:", error);
@@ -80,20 +93,28 @@ function GarbageEventsPage() {
               <p style={styles.text}>
                 🎁 <strong>Reward:</strong> {event.tokenReward} tokens
               </p>
-              <button
-                style={styles.button}
-                onClick={() => handleRegister(event.id)}
-              >
-                Register
-              </button>
-              <div>
+              {!registrations.includes(event.id) ? (
                 <button
-                  style={styles.confirmbutton}
-                  onClick={() => navigate("/garbageparticipation")}
+                  style={styles.button}
+                  onClick={() => handleRegister(event.id)}
                 >
-                  Confirm Participation
+                  Register
                 </button>
-              </div>
+              ) : (
+                <p style={styles.alreadyRegistered}>
+                  ✅ You’ve registered for this event
+                </p>
+              )}
+              {registrations.includes(event.id) && (
+                <div>
+                  <button
+                    style={styles.confirmbutton}
+                    onClick={() => navigate("/garbageparticipation")}
+                  >
+                    Confirm Participation
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -169,6 +190,12 @@ const styles = {
     padding: "10px 15px",
     borderRadius: 5,
     cursor: "pointer",
+    alreadyRegistered: {
+      marginTop: 10,
+      fontSize: 14,
+      color: "#276749",
+      fontWeight: "bold",
+    },
   },
 };
 

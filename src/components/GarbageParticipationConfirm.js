@@ -1,16 +1,23 @@
-import React, { useState } from "react";
-import { getAuth } from "firebase/auth";
+import React, { useState, useEffect } from "react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from "./firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import axios from "axios";
 
 export default function ConfirmParticipation() {
   const auth = getAuth();
-  const user = auth.currentUser;
+  const [user, setUser] = useState(null);
   const [image, setImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(null);
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, [auth]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -21,11 +28,11 @@ export default function ConfirmParticipation() {
   const uploadToCloudinary = async (file) => {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("upload_preset", "green_credit_upload"); // Replace with your Cloudinary upload preset
-    formData.append("cloud_name", "ds6xoprrg"); // Replace with your Cloudinary cloud name
+    formData.append("upload_preset", "green_credit_upload");
+    formData.append("cloud_name", "ds6xoprrg");
 
     const res = await axios.post(
-      "https://api.cloudinary.com/v1_1/your_cloud_name/image/upload",
+      "https://api.cloudinary.com/v1_1/ds6xoprrg/image/upload",
       formData
     );
     return res.data.secure_url;
@@ -54,12 +61,12 @@ export default function ConfirmParticipation() {
         createdAt: serverTimestamp(),
       });
 
-      setMessage("Submission successful! Awaiting approval.");
+      setMessage("✅ Submission successful! Awaiting admin approval.");
       setImage(null);
       setPreview(null);
     } catch (err) {
       console.error(err);
-      setMessage("Error submitting. Please try again.");
+      setMessage("❌ Error submitting. Please try again.");
     } finally {
       setUploading(false);
     }
