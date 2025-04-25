@@ -12,7 +12,7 @@ const activities = [
     title: "Clean Garbage",
     icon: "🧹",
     description: "Report and clean up local waste areas.",
-    link: "/activities/clean-garbage",
+    link: "/garbageevents",
   },
   {
     title: "Install Solar",

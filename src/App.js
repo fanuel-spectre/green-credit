@@ -32,6 +32,10 @@ import OrderConfirmation from "./components/OrderConfirmation";
 import ScrollToTop from "./components/ScrollToTop";
 import AdminDashboard from "./components/AdminDashboard"; 
 import Orders from "./components/Orders"; 
+import GarbageEventsPage from "./components/GarbageEventsPage"; 
+import CommunityCleanupEvents from "./components/CommunityCleanupEvents"; 
+import GarbageParticipationConfirm from "./components/GarbageParticipationConfirm"; 
+import CleanupDashboard from "./components/CleanupDashboard"; 
 import Loader from "./components/Loader";
 import FloatingChatButton from "./components/FloatingChatButton";
 function App() {
@@ -64,6 +68,10 @@ function App() {
           <Route path="/cart" element={<CartPage />} />
           <Route path="/orderconfirmation" element={<OrderConfirmation />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/garbageevents" element={<GarbageEventsPage />} />
+          <Route path="/communitycleanupevents" element={<CommunityCleanupEvents />} />
+          <Route path="/garbageparticipation" element={<GarbageParticipationConfirm />} />
+          <Route path="/cleanupdashboard" element={<CleanupDashboard />} />
           <Route
             path="/"
             element={user ? <Navigate to="/landingpage" /> : <Login />}

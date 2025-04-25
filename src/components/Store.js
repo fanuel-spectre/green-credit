@@ -1,17 +1,10 @@
+// Store.js
 import React, { useEffect, useState } from "react";
-import {
-  collection,
-  getDocs,
-  doc,
-  query,
-  where,
-  updateDoc,
-  getDoc,
-} from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { toast } from "react-toastify";
 import Loader from "./Loader";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function Store() {
   const [products, setProducts] = useState([]);
@@ -19,189 +12,122 @@ function Store() {
   const [userTokens, setUserTokens] = useState(0);
   const [totalTokens, setTotalTokens] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [cart, setCart] = useState(() => {
+    const stored = localStorage.getItem("cart");
+    return stored ? JSON.parse(stored) : [];
+  });
 
-   const [cart, setCart] = useState(() => {
-     const storedCart = localStorage.getItem("cart");
-     return storedCart ? JSON.parse(storedCart) : [];
-   });
   const [cartTotal, setCartTotal] = useState(0);
 
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
+    const total = cart.reduce(
+      (sum, item) => sum + item.cost * item.quantity,
+      0
+    );
+    setCartTotal(total);
   }, [cart]);
 
-   const handleAddToCart = (product) => {
-     setCart((prev) => {
-       const existing = prev.find((item) => item.id === product.id);
-       if (existing) {
-         return prev.map((item) =>
-           item.id === product.id
-             ? { ...item, quantity: item.quantity + 1 }
-             : item
-         );
-       } else {
-         return [...prev, { ...product, quantity: 1 }];
-       }
-     });
-   };
+  const fetchProducts = async () => {
+    const snapshot = await getDocs(collection(db, "Products"));
+    const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    setProducts(list);
+  };
+
+  const fetchTokenAwards = async (uid) => {
+    const q = query(
+      collection(db, "TreeSubmissions"),
+      where("userId", "==", uid),
+      where("status", "==", "approved")
+    );
+    const snapshot = await getDocs(q);
+    let total = 0;
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      total += Number(data.tokensAwarded || 0);
+    });
+    setUserTokens(total);
+    setTotalTokens(total);
+  };
+
+  const fetchUser = () => {
+    return new Promise((resolve) => {
+      auth.onAuthStateChanged(async (currentUser) => {
+        if (currentUser) {
+          setUser(currentUser);
+          await fetchTokenAwards(currentUser.uid);
+        }
+        resolve();
+      });
+    });
+  };
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      const querySnapshot = await getDocs(collection(db, "Products"));
-      const items = [];
-      querySnapshot.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
-      setProducts(items);
-    };
-
-    const fetchUser = () => {
-      return new Promise((resolve) => {
-        auth.onAuthStateChanged(async (currentUser) => {
-          if (currentUser) {
-            setUser(currentUser);
-            const docRef = doc(db, "Users", currentUser.uid);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-              setUserTokens(docSnap.data().redeemableTokens || 0);
-              await fetchTokenAwards(currentUser.uid);
-            }
-          }
-          resolve();
-        });
-      });
-    };
-
-    const fetchTokenAwards = async (uid) => {
-      const q = query(
-        collection(db, "TreeSubmissions"),
-        where("userId", "==", uid),
-        where("status", "==", "approved")
-      );
-
-      const querySnapshot = await getDocs(q);
-
-      let total = 0;
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data.tokensAwarded) {
-          total += Number(data.tokensAwarded || 0);
-        }
-      });
-
-      setTotalTokens(total);
-    };
-
     const loadData = async () => {
       await Promise.all([fetchProducts(), fetchUser()]);
       setLoading(false);
     };
-
     loadData();
   }, []);
 
+  const handleAddToCart = (product) => {
+    const exists = cart.find((item) => item.id === product.id);
+    const totalIfAdded = cartTotal + product.cost;
 
-  useEffect(() => {
-    console.log("Cart:", cart);
-    console.log("Cart Total:", cartTotal);
-  }, [cart, cartTotal]);
-
-  const addToCart = (product) => {
-    console.log("Trying to add to cart:", product.name);
-    toast.info(`Adding ${product.name} to cart`);
-
-    if (userTokens < cartTotal + product.cost) {
-      return toast.warning("Not enough tokens for this item.");
+    if (totalIfAdded > userTokens) {
+      return toast.warning("Not enough tokens to add this item.");
     }
 
-    setCart((prev) => [...prev, product]);
-    setCartTotal((prev) => prev + product.cost);
-  };
-useEffect(() => {
-  console.log("User tokens:", userTokens);
-}, [userTokens]);
-
-
-  const handleCheckout = async () => {
-    if (!user) return toast.error("You must be logged in");
-    if (cart.length === 0) return toast.warning("Cart is empty");
-
-    try {
-      const userRef = doc(db, "Users", user.uid);
-      await updateDoc(userRef, {
-        redeemableTokens: userTokens - cartTotal,
-      });
-
-      setUserTokens(userTokens - cartTotal);
-      toast.success("Successfully redeemed items!");
-
-      // Clear cart
-      setCart([]);
-      setCartTotal(0);
-    } catch (error) {
-      console.error("Checkout error:", error);
-      toast.error("Checkout failed");
+    if (exists) {
+      const updated = cart.map((item) =>
+        item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+      );
+      setCart(updated);
+    } else {
+      setCart([...cart, { ...product, quantity: 1 }]);
     }
+    toast.info(`${product.name} added to cart.`);
   };
 
   if (loading) return <Loader />;
 
-    return (
-      <div style={styles.container}>
-        <h2 style={styles.header}>Redeem Your Tokens</h2>
-        <p style={styles.tokenDisplay}>
-          Your Tokens: <strong>{userTokens}</strong> / Earned:{" "}
-          <strong>{totalTokens}</strong>
-        </p>
+  return (
+    <div style={styles.container}>
+      <h2 style={styles.header}>Redeem Your Tokens</h2>
+      <p style={styles.tokenDisplay}>
+        Your Tokens: <strong>{userTokens}</strong> / Earned:{" "}
+        <strong>{totalTokens}</strong>
+      </p>
 
-        <div style={styles.grid}>
-          {products.map((product) => (
-            <div key={product.id} style={styles.card}>
-              {product.image && (
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  style={styles.image}
-                />
-              )}
-              <h3>{product.name}</h3>
-              <p>{product.description}</p>
-              <p>
-                <strong>{product.cost} Tokens</strong>
-              </p>
-              <button
-                style={styles.button}
-                onClick={() => handleAddToCart(product)}
-                disabled={userTokens < cartTotal + product.cost}
-              >
-                Add to Cart
-              </button>
-            </div>
-          ))}
-        </div>
-
-        {/* {cart.length > 0 && (
-          <div style={styles.cartBox}>
-            <h3>Cart Summary</h3>
-            <ul>
-              {cart.map((item, idx) => (
-                <li key={idx}>
-                  {item.name} - {item.cost} tokens
-                </li>
-              ))}
-            </ul>
+      <div style={styles.grid}>
+        {products.map((product) => (
+          <div key={product.id} style={styles.card}>
+            {product.image && (
+              <img
+                src={product.image}
+                alt={product.name}
+                style={styles.image}
+              />
+            )}
+            <h3>{product.name}</h3>
+            <p>{product.description}</p>
             <p>
-              Total: <strong>{cartTotal} tokens</strong>
+              <strong>{product.cost} Tokens</strong>
             </p>
-            <button style={styles.checkoutButton} onClick={handleCheckout}>
-              Checkout
+            <button
+              style={styles.button}
+              onClick={() => handleAddToCart(product)}
+              disabled={cartTotal + product.cost > userTokens}
+            >
+              Add to Cart
             </button>
           </div>
-        )} */}
-
-        {/* 👇👇👇 Add this to show the floating button */}
-        {cart.length > 0 && <FloatingCartButton cart={cart} />}
+        ))}
       </div>
-    );
 
+      {cart.length > 0 && <FloatingCartButton cart={cart} />}
+    </div>
+  );
 }
 
 function FloatingCartButton({ cart }) {
@@ -209,13 +135,10 @@ function FloatingCartButton({ cart }) {
 
   return (
     <div>
-      {/* Floating Cart Button */}
       <div onClick={() => setShowPopup(true)} style={styles.floatingButton}>
-        <span style={styles.cartCount}>{cart.length}</span>
-        🛒
+        <span style={styles.cartCount}>{cart.length}</span>🛒
       </div>
 
-      {/* Popup */}
       {showPopup && (
         <div style={styles.popup}>
           <h4>Cart Summary</h4>
@@ -241,16 +164,8 @@ const styles = {
     backgroundColor: "#e6f4ea",
     minHeight: "100vh",
   },
-  header: {
-    textAlign: "center",
-    color: "#276749",
-    fontSize: "28px",
-  },
-  tokenDisplay: {
-    textAlign: "right",
-    fontSize: "18px",
-    marginBottom: "20px",
-  },
+  header: { textAlign: "center", color: "#276749", fontSize: "28px" },
+  tokenDisplay: { textAlign: "right", fontSize: "18px", marginBottom: "20px" },
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
@@ -280,23 +195,7 @@ const styles = {
     borderRadius: "6px",
     cursor: "pointer",
   },
-  cartBox: {
-    marginTop: "40px",
-    padding: "20px",
-    backgroundColor: "#fff",
-    borderRadius: "10px",
-    border: "1px solid #ccc",
-  },
-  checkoutButton: {
-    backgroundColor: "#2f855a",
-    color: "#fff",
-    padding: "10px 20px",
-    marginTop: "10px",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-  },
-   floatingButton: {
+  floatingButton: {
     position: "fixed",
     bottom: "30px",
     right: "100px",
@@ -347,8 +246,6 @@ const styles = {
     padding: "5px",
     cursor: "pointer",
   },
-
 };
-
 
 export default Store;
