@@ -69,7 +69,7 @@ useEffect(() => {
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.heading}>🧹 Community Clean-Up Events</h2>
+      <h2 style={styles.heading}> Community Clean-Up Events</h2>
 
       {loading ? (
         <div style={styles.loaderContainer}>
@@ -84,14 +84,14 @@ useEffect(() => {
               <h3 style={styles.title}>{event.title}</h3>
               <p style={styles.text}>{event.description}</p>
               <p style={styles.text}>
-                📍 <strong>Location:</strong> {event.location}
+                 <strong>Location:</strong> {event.location}
               </p>
               <p style={styles.text}>
-                🕒 <strong>Date:</strong>{" "}
+                 <strong>Date:</strong>{" "}
                 {event.dateTime.toDate().toLocaleString()}
               </p>
               <p style={styles.text}>
-                🎁 <strong>Reward:</strong> {event.tokenReward} tokens
+                 <strong>Reward:</strong> {event.tokenReward} tokens
               </p>
               {!registrations.includes(event.id) ? (
                 <button

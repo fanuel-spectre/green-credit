@@ -19,7 +19,7 @@ export default function Footer() {
           <h4 style={styles.subtitle}>Address</h4>
           <p>Green Credit HQ</p>
           <p>123 Eco Street, Solarville</p>
-          <p>Clean Earth, Planet 0001 🌍</p>
+          <p>Clean Earth, Planet 0001</p>
         </div>
       </div>
       <div style={styles.mapContainer}>
