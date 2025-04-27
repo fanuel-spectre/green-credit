@@ -18,7 +18,7 @@ const activities = [
     title: "Install Solar",
     icon: "🔋",
     description: "Install solar panels and reduce grid use.",
-    link: "/activities/install-solar",
+    link: "/solarapplications",
   },
   {
     title: "Conserve Water",

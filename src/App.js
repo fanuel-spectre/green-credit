@@ -36,6 +36,13 @@ import GarbageEventsPage from "./components/GarbageEventsPage";
 import CommunityCleanupEvents from "./components/CommunityCleanupEvents"; 
 import GarbageParticipationConfirm from "./components/GarbageParticipationConfirm"; 
 import CleanupDashboard from "./components/CleanupDashboard"; 
+import SolarRequests from "./components/SolarRequest";
+import SolarApplications from "./components/SolarApplications";
+import SolarInstallers from "./components/SolarInstallers";
+import SolarSubmissions from "./components/SolarSubmissions";
+import SolarApproval from "./components/SolarApproval";
+import MySolarRequests from "./components/MySolarRequests";
+import RewardsHistory from "./components/RewardsHistory";
 import Loader from "./components/Loader";
 import FloatingChatButton from "./components/FloatingChatButton";
 function App() {
@@ -69,9 +76,22 @@ function App() {
           <Route path="/orderconfirmation" element={<OrderConfirmation />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/garbageevents" element={<GarbageEventsPage />} />
-          <Route path="/communitycleanupevents" element={<CommunityCleanupEvents />} />
-          <Route path="/garbageparticipation" element={<GarbageParticipationConfirm />} />
+          <Route
+            path="/communitycleanupevents"
+            element={<CommunityCleanupEvents />}
+          />
+          <Route
+            path="/garbageparticipation"
+            element={<GarbageParticipationConfirm />}
+          />
           <Route path="/cleanupdashboard" element={<CleanupDashboard />} />
+          <Route path="/solarrequests" element={<SolarRequests />} />
+          <Route path="/solarapplications" element={<SolarApplications />} />
+          <Route path="/solarinstallers" element={<SolarInstallers />} />
+          <Route path="/solarsubmissions" element={<SolarSubmissions />} />
+          <Route path="/solarapproval" element={<SolarApproval />} />
+          <Route path="/mysolarrequests" element={<MySolarRequests />} />
+          <Route path="/rewardhistory" element={<RewardsHistory />} />
           <Route
             path="/"
             element={user ? <Navigate to="/landingpage" /> : <Login />}
