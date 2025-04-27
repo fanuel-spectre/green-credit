@@ -64,12 +64,20 @@ export default function BrowseSolarJobs() {
 
   return (
     <div style={styles.container}>
-      <button onClick={() => navigate("/solarrequests")} style={styles.button2}>
-        + Add a Request
-      </button>
-      <button onClick={() => navigate("/mysolarrequests")} style={styles.button2}>
-        My Requests
-      </button>
+      <div style={styles.buttonContainer}>
+        <button
+          onClick={() => navigate("/solarrequests")}
+          style={styles.button2}
+        >
+          + Add a Request
+        </button>
+        <button
+          onClick={() => navigate("/mysolarrequests")}
+          style={styles.button2}
+        >
+          My Requests
+        </button>
+      </div>
       <h2 style={styles.heading}>Available Solar Installations</h2>
 
       {loading ? (
@@ -108,10 +116,18 @@ const styles = {
     backgroundColor: "#f0fff4",
     minHeight: "100vh",
   },
+  buttonContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "10px",
+    justifyContent: "center",
+    marginBottom: "20px",
+  },
   heading: {
     textAlign: "center",
     marginBottom: "20px",
     color: "#276749",
+    fontSize: "clamp(1.5rem, 5vw, 2rem)",
   },
   loading: {
     textAlign: "center",
@@ -124,7 +140,7 @@ const styles = {
   },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
     gap: "20px",
   },
   card: {
@@ -132,6 +148,9 @@ const styles = {
     padding: "20px",
     borderRadius: "10px",
     boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
   },
   title: {
     marginBottom: "10px",
@@ -145,17 +164,17 @@ const styles = {
     borderRadius: "5px",
     border: "none",
     cursor: "pointer",
+    fontSize: "1rem",
   },
   button2: {
-    marginTop: "10px",
-    margin: "10px",
-    width: "20%",
+    flex: "1 1 200px",
     backgroundColor: "#276749",
     color: "white",
     padding: "10px",
     borderRadius: "5px",
     border: "none",
     cursor: "pointer",
+    fontSize: "1rem",
   },
   message: {
     marginTop: "15px",

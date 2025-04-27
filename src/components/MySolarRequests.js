@@ -56,7 +56,7 @@ export default function MySolarRequests() {
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.heading}>🔧 My Solar Installation Requests</h2>
+      <h2 style={styles.heading}>My Solar Installation Requests</h2>
       {requests.length === 0 ? (
         <p>No solar requests yet.</p>
       ) : (

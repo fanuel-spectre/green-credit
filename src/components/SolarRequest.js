@@ -40,13 +40,15 @@ export default function CreateSolarRequest() {
   };
 
   return (
-    <div>
-      <button
-        onClick={() => navigate("/solarinstallers")}
-        style={styles.button2}
-      >
-        My Requests
-      </button>
+    <div style={styles.pageContainer}>
+      <div style={styles.buttonContainer}>
+        <button
+          onClick={() => navigate("/solarinstallers")}
+          style={styles.button2}
+        >
+          My Requests
+        </button>
+      </div>
       <div style={styles.container}>
         <h2 style={styles.heading}>Post a Solar Installation Request</h2>
 
@@ -79,57 +81,80 @@ export default function CreateSolarRequest() {
 }
 
 const styles = {
+  pageContainer: {
+    padding: "20px",
+    backgroundColor: "#f0fff4",
+    minHeight: "100vh",
+    boxSizing: "border-box",
+    width: "100%", // Make sure the outer container never exceeds screen width
+  },
+  buttonContainer: {
+    display: "flex",
+    justifyContent: "center",
+    marginBottom: "20px",
+    width: "100%",
+  },
   container: {
     padding: "20px",
     maxWidth: "500px",
+    width: "100%",
     margin: "0 auto",
-    background: "#f0fff4",
+    background: "white",
     borderRadius: "10px",
     boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+    boxSizing: "border-box", // Important to prevent overflow due to padding
   },
   heading: {
     textAlign: "center",
     marginBottom: "20px",
     color: "#276749",
+    fontSize: "clamp(1.5rem, 5vw, 2rem)",
   },
   textarea: {
     width: "100%",
-    minHeight: "100px",
+    minHeight: "120px",
     padding: "10px",
-    marginBottom: "10px",
+    marginBottom: "15px",
     borderRadius: "5px",
     border: "1px solid #ccc",
+    fontSize: "1rem",
+    boxSizing: "border-box",
   },
   input: {
     width: "100%",
     padding: "10px",
-    marginBottom: "10px",
+    marginBottom: "15px",
     borderRadius: "5px",
     border: "1px solid #ccc",
+    fontSize: "1rem",
+    boxSizing: "border-box",
   },
   button: {
     width: "100%",
-    padding: "10px",
+    padding: "12px",
     backgroundColor: "#276749",
     color: "white",
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
+    fontSize: "1rem",
+    boxSizing: "border-box",
   },
   message: {
-    marginTop: "10px",
+    marginTop: "15px",
     textAlign: "center",
     color: "#2f855a",
   },
   button2: {
-    marginTop: "10px",
-    margin: "10px",
-    width: "10%",
+    width: "100%", // Full width on small devices
+    maxWidth: "200px", // But limit it on larger devices
     backgroundColor: "#276749",
     color: "white",
     padding: "10px",
     borderRadius: "5px",
     border: "none",
     cursor: "pointer",
+    fontSize: "1rem",
+    boxSizing: "border-box",
   },
 };
