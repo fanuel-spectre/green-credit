@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import { db } from "./firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 export default function RewardsHistory() {
   const [rewards, setRewards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalTokens, setTotalTokens] = useState(0);
+  const navigate = useNavigate();
 
   const auth = getAuth();
   const user = auth.currentUser;
@@ -80,10 +82,21 @@ export default function RewardsHistory() {
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.heading}>🏆 My Rewards History</h2>
+      <div style={styles.buttonContainer}>
+        <button
+          onClick={() => navigate("/rewardhistory")}
+          style={styles.button2}
+        >
+          Awarded Token History
+        </button>
+        <button onClick={() => navigate("/orders")} style={styles.button2}>
+          Redeemed Token History
+        </button>
+      </div>
+      <h2 style={styles.heading}>My Rewards History</h2>
 
       <div style={styles.totalBox}>
-        <h3 style={styles.totalText}>🎯 Total Tokens Earned: {totalTokens}</h3>
+        <h3 style={styles.totalText}>Total Tokens Earned: {totalTokens}</h3>
       </div>
 
       {loading ? (
@@ -145,5 +158,22 @@ const styles = {
     padding: 15,
     borderRadius: 10,
     boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+  },
+  buttonContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "10px",
+    justifyContent: "center",
+    marginBottom: "20px",
+  },
+  button2: {
+    flex: "1 1 200px",
+    backgroundColor: "#276749",
+    color: "white",
+    padding: "10px",
+    borderRadius: "5px",
+    border: "none",
+    cursor: "pointer",
+    fontSize: "1rem",
   },
 };

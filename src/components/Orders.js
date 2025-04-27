@@ -3,10 +3,12 @@ import { getAuth } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "./firebase";
 import Loader from "./Loader"; 
+import { useNavigate } from "react-router-dom";
 
 const Orders = ({ currentUser }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true); 
+  const navigate = useNavigate();
 
 
   const fetchOrders = async () => {
@@ -39,8 +41,22 @@ const Orders = ({ currentUser }) => {
 
   return (
     <div style={styles.ordersContainer}>
+      <div style={styles.buttonContainer}>
+        <button
+          onClick={() => navigate("/rewardhistory")}
+          style={styles.button2}
+        >
+          Awarded Token History
+        </button>
+        <button
+          onClick={() => navigate("/orders")}
+          style={styles.button2}
+        >
+          Redeemed Token History
+        </button>
+      </div>
       {loading ? (
-        <Loader /> 
+        <Loader />
       ) : (
         <>
           <h2>Your Orders</h2>
@@ -136,6 +152,23 @@ const styles = {
   productDetails: {
     flex: 1,
   },
+  buttonContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "10px",
+    justifyContent: "center",
+    marginBottom: "20px",
+  },
+  button2: {
+    flex: "1 1 200px",
+    backgroundColor: "#276749",
+    color: "white",
+    padding: "10px",
+    borderRadius: "5px",
+    border: "none",
+    cursor: "pointer",
+    fontSize: "1rem",
+  },
 
   // Mobile responsive styles
   "@media (max-width: 600px)": {
@@ -162,6 +195,23 @@ const styles = {
     productsList: {
       flexDirection: "column",
       gap: "10px",
+    },
+    buttonContainer: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "10px",
+      justifyContent: "center",
+      marginBottom: "20px",
+    },
+    button2: {
+      flex: "1 1 200px",
+      backgroundColor: "#276749",
+      color: "white",
+      padding: "10px",
+      borderRadius: "5px",
+      border: "none",
+      cursor: "pointer",
+      fontSize: "1rem",
     },
   },
 };

@@ -9,7 +9,7 @@ import {
   FaStore,
   FaUserCircle,
   FaSignInAlt,
-  FaShopify,
+  FaHistory,
 } from "react-icons/fa";
 import Login from "./components/Login";
 import Profile from "./components/profile";
@@ -210,11 +210,11 @@ function NavBar({user}) {
             </li>
             <li>
               <Link
-                to="/orders"
+                to="/rewardhistory"
                 style={navLinkStyle}
-                onClick={(e) => redirectToLogin(e, "/orders")}
+                onClick={(e) => redirectToLogin(e, "/rewardhistory")}
               >
-                Redeemed
+                History
               </Link>
             </li>
             <li>
@@ -290,13 +290,13 @@ function NavBar({user}) {
               </Link>
             </li>
             <li style={styles.menuItem}>
-              <FaShopify style={styles.icon} />
+              <FaHistory style={styles.icon} />
               <Link
-                to="/orders"
+                to="/rewardhistory"
                 style={navLinkStyle}
-                onClick={(e) => handleMenuClick(e, "/orders")}
+                onClick={(e) => handleMenuClick(e, "/rewardhistory")}
               >
-                Redeemed
+                History
               </Link>
             </li>
             <li style={styles.menuItem}>
@@ -365,7 +365,7 @@ const styles = {
   dropdown: {
     backgroundColor: "#276749",
     overflow: "hidden",
-    width: "100%",
+    width: "89%",
     transition: "all 0.3s ease",
   },
   dropdownList: {
