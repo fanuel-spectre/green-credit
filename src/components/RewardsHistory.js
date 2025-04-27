@@ -28,7 +28,7 @@ export default function RewardsHistory() {
         const treeRewards = treesSnapshot.docs.map((doc) => ({
           id: doc.id,
           type: "Tree Planting",
-          tokens: doc.data().rewardTokens,
+          tokens: doc.data().tokensAwarded,
           date: doc.data().createdAt?.toDate(),
         }));
 
