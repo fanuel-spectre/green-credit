@@ -19,7 +19,7 @@ function Login() {
       try {
         await signInWithEmailAndPassword(auth, email, password);
         console.log("Admin logged in Successfully");
-        window.location.href = "/admindashboard"; // Redirect to admin dashboard
+        window.location.href = "/adminpages"; // Redirect to admin dashboard
         toast.success("Admin logged in Successfully", {
           position: "top-center",
         });

@@ -18,33 +18,46 @@ function Leaderboard() {
 useEffect(() => {
   const fetchUsersWithTokens = async () => {
     try {
-      const userSnapshot = await getDocs(collection(db, "Users"));
-      const submissionSnapshot = await getDocs(
-        collection(db, "TreeSubmissions")
-      );
+      const [userSnapshot, treeSnapshot, cleanupSnapshot, solarSnapshot] =
+        await Promise.all([
+          getDocs(collection(db, "Users")),
+          getDocs(collection(db, "TreeSubmissions")),
+          getDocs(collection(db, "CleanupParticipation")),
+          getDocs(collection(db, "SolarInstallationRewards")),
+        ]);
 
-
-      // Create a token map by userId
       const tokenMap = {};
 
-      submissionSnapshot.forEach((doc) => {
+      // 1. TreeSubmissions
+      treeSnapshot.forEach((doc) => {
         const data = doc.data();
         if (data.status === "approved" && data.tokensAwarded && data.userId) {
-          console.log(
-            "Submission userId:",
-            data.userId,
-            "Tokens:",
-            data.tokensAwarded
-          );
           tokenMap[data.userId] =
-            (tokenMap[data.userId] || 0) + data.tokensAwarded;
+            (tokenMap[data.userId] || 0) + Number(data.tokensAwarded);
         }
       });
 
-      // Build user list with tokens
+      // 2. CleanupParticipation
+      cleanupSnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.status === "approved" && data.rewardTokens && data.userId) {
+          tokenMap[data.userId] =
+            (tokenMap[data.userId] || 0) + Number(data.rewardTokens);
+        }
+      });
+
+      // 3. SolarInstallationRewards (assuming all are approved by default)
+      solarSnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.rewardTokens && data.userId) {
+          tokenMap[data.userId] =
+            (tokenMap[data.userId] || 0) + Number(data.rewardTokens);
+        }
+      });
+
+      // Build user list with total tokens from all activities
       const userList = [];
       userSnapshot.forEach((doc) => {
-        console.log("User doc.id:", doc.id);
         const data = doc.data();
         const totalTokens = tokenMap[doc.id] || 0;
         userList.push({
@@ -55,7 +68,7 @@ useEffect(() => {
         });
       });
 
-      // Sort by tokens descending
+      // Sort users by total tokens (descending)
       const sorted = userList.sort((a, b) => b.tokens - a.tokens);
       setUsers(sorted);
       setLoading(false);

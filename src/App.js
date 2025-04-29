@@ -43,6 +43,7 @@ import SolarSubmissions from "./components/SolarSubmissions";
 import SolarApproval from "./components/SolarApproval";
 import MySolarRequests from "./components/MySolarRequests";
 import RewardsHistory from "./components/RewardsHistory";
+import AdminPages from "./components/AdminPages";
 import Loader from "./components/Loader";
 import FloatingChatButton from "./components/FloatingChatButton";
 function App() {
@@ -92,6 +93,7 @@ function App() {
           <Route path="/solarapproval" element={<SolarApproval />} />
           <Route path="/mysolarrequests" element={<MySolarRequests />} />
           <Route path="/rewardhistory" element={<RewardsHistory />} />
+          <Route path="/adminpages" element={<AdminPages />} />
           <Route
             path="/"
             element={user ? <Navigate to="/landingpage" /> : <Login />}
