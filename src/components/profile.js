@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "./firebase";
-import {
-  doc,
-  getDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import userImg from "../assets/user.png";
+import { doc, getDoc, query, where, collection, getDocs } from "firebase/firestore";
 import Loader from "./Loader";
 
 function Profile() {
   const [userDetails, setUserDetails] = useState(null);
   const [totalTokens, setTotalTokens] = useState(0);
+  const [userTokens, setUserTokens] = useState(0);
+  const [rewards, setRewards] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const auth = getAuth();
+  const cuser = auth.currentUser;
 
   const fetchUserData = async () => {
     auth.onAuthStateChanged(async (user) => {
@@ -27,8 +26,9 @@ function Profile() {
           if (docSnap.exists()) {
             const data = docSnap.data();
             setUserDetails(data);
-            console.log("User data:", data);
-            await fetchTokenAwards(user.uid);
+
+            // ✅ Get totalTokens directly from user document
+            setTotalTokens(data.totalTokens || 0);
           }
         } catch (err) {
           console.error("Error fetching user data:", err);
@@ -40,29 +40,6 @@ function Profile() {
       setLoading(false);
     });
   };
-
-  const fetchTokenAwards = async (uid) => {
-    const q = query(
-      collection(db, "TreeSubmissions"),
-      where("userId", "==", uid),
-      where("status", "==", "approved")
-    );
-
-    const querySnapshot = await getDocs(q);
-
-    let total = 0;
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      console.log("Found doc:", data);
-
-      if (data.tokensAwarded) {
-        total += Number(data.tokensAwarded || 0);
-      }
-    });
-
-    setTotalTokens(total);
-  };
-
 
   useEffect(() => {
     fetchUserData();
@@ -78,6 +55,73 @@ function Profile() {
     }
   }
 
+    useEffect(() => {
+      if (!cuser) return;
+  
+      const fetchRewards = async () => {
+        try {
+          // Fetch TreeSubmissions
+          const treesQ = query(
+            collection(db, "TreeSubmissions"),
+            where("userId", "==", cuser.uid),
+            where("status", "==", "approved")
+          );
+          const treesSnapshot = await getDocs(treesQ);
+          const treeRewards = treesSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            type: "Tree Planting",
+            tokens: doc.data().tokensAwarded,
+            date: doc.data().createdAt?.toDate(),
+          }));
+  
+          // Fetch CleanupParticipation
+          const cleanupQ = query(
+            collection(db, "CleanupParticipation"),
+            where("userId", "==", cuser.uid),
+            where("status", "==", "approved")
+          );
+          const cleanupSnapshot = await getDocs(cleanupQ);
+          const cleanupRewards = cleanupSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            type: "Community Cleanup",
+            tokens: doc.data().rewardTokens,
+            date: doc.data().createdAt?.toDate(),
+          }));
+  
+          // Fetch SolarInstallationRewards
+          const solarQ = query(
+            collection(db, "SolarInstallationRewards"),
+            where("userId", "==", cuser.uid)
+          );
+          const solarSnapshot = await getDocs(solarQ);
+          const solarRewards = solarSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            type: "Solar Installation",
+            tokens: doc.data().rewardTokens,
+            date: doc.data().createdAt?.toDate(),
+          }));
+  
+          // Combine all rewards
+          const allRewards = [...treeRewards, ...cleanupRewards, ...solarRewards];
+          allRewards.sort((a, b) => b.date - a.date); // Sort newest first
+          setRewards(allRewards);
+  
+          // Calculate total tokens
+          const total = allRewards.reduce(
+            (acc, curr) => acc + (curr.tokens || 0),
+            0
+          );
+          setUserTokens(total);
+        } catch (error) {
+          console.error("Error fetching rewards:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchRewards();
+    }, [cuser]);
+
   if (loading) return <Loader />;
 
   return (
@@ -89,20 +133,25 @@ function Profile() {
               <>
                 <div style={styles.userInfo}>
                   <img
-                    src={userDetails.photo}
+                    // src={userDetails.photo}
+                    src={userImg}
                     alt={`${userDetails.firstName}'s profile`}
-                    width="80px"
-                    height="80px"
+                    width="70px"
+                    height="70px"
                     style={styles.profileImage}
                   />
                   <div style={styles.textContainer}>
                     <p style={styles.infoText}>
-                      <strong>First Name: </strong>
-                      {userDetails.firstName}
+                      <strong>Full Name: </strong>
+                      <span style={{ color: "#2F855A", fontWeight: "bold" }}>
+                        {userDetails.firstName} {userDetails.lastName}
+                      </span>
                     </p>
                     <p style={styles.infoText}>
                       <strong>Email: </strong>
-                      {userDetails.email}
+                      <span style={{ color: "#2F855A", fontWeight: "bold" }}>
+                        {userDetails.email}
+                      </span>
                     </p>
                   </div>
                   <button
@@ -128,20 +177,28 @@ function Profile() {
                     <p style={styles.infoText}>
                       <strong>Total Tokens Earned: </strong>
                       <span style={{ color: "#2F855A", fontWeight: "bold" }}>
-                        {totalTokens}
+                        {userTokens}
                       </span>
                     </p>
                     <p style={styles.infoText}>
-                      <strong>Redeem: </strong>
-                      {/* Placeholder for future redeem logic */}
-                      Available soon
+                      <strong>Total Redeemed Tokens: </strong>
+                      <span style={{ color: "#2F855A", fontWeight: "bold" }}>
+                        {userTokens - totalTokens}
+                      </span>
+                    </p>
+                    <p style={styles.infoText}>
+                      <strong>Total Available Tokens: </strong>
+                      <span style={{ color: "#2F855A", fontWeight: "bold" }}>
+                        {totalTokens}
+                      </span>
                     </p>
                   </div>
                   <button
+                    onClick={() => navigate("/store")}
                     className="btn btn-primary"
                     style={styles.redeemButton}
                   >
-                    Redeem Amount
+                    Redeem Tokens
                   </button>
                 </div>
               </>
