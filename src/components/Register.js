@@ -26,6 +26,7 @@ function Register() {
         });
       }
       console.log("User Registered Successfully!!");
+      window.location.href = "/landingpage";
       toast.success("User Registered Successfully!!", {
         position: "top-center",
       });
