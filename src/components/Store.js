@@ -4,6 +4,7 @@ import { collection, getDocs, doc, getDoc, query, where } from "firebase/firesto
 import { auth, db } from "./firebase";
 import { toast } from "react-toastify";
 import Loader from "./Loader";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 function Store() {
@@ -102,8 +103,9 @@ function Store() {
     <div style={styles.container}>
       <h2 style={styles.header}>Redeem Your Tokens</h2>
       <p style={styles.tokenDisplay}>
-        Your Tokens: <strong>{userTokens}</strong> / Earned:{" "}
-        <strong>{totalTokens}</strong>
+        Your Tokens: <strong>{totalTokens}</strong> 
+        {/* / Earned:{" "}
+        <strong>{totalTokens}</strong> */}
       </p>
 
       <div style={styles.grid}>
@@ -141,10 +143,13 @@ function Store() {
 
 function FloatingCartButton({ cart }) {
   const [showPopup, setShowPopup] = useState(false);
+  const navigate = useNavigate();
+
 
   return (
     <div>
-      <div onClick={() => setShowPopup(true)} style={styles.floatingButton}>
+      {/* <div onClick={() => setShowPopup(true)} style={styles.floatingButton}> */}
+      <div onClick={() => navigate("/cart")} style={styles.floatingButton}>
         <span style={styles.cartCount}>{cart.length}</span>🛒
       </div>
 
