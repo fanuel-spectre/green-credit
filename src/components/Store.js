@@ -1,6 +1,6 @@
 // Store.js
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, query, where } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { toast } from "react-toastify";
 import Loader from "./Loader";
@@ -34,33 +34,40 @@ function Store() {
     setProducts(list);
   };
 
-  const fetchTokenAwards = async (uid) => {
-    const q = query(
-      collection(db, "TreeSubmissions"),
-      where("userId", "==", uid),
-      where("status", "==", "approved")
-    );
-    const snapshot = await getDocs(q);
-    let total = 0;
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      total += Number(data.tokensAwarded || 0);
-    });
-    setUserTokens(total);
-    setTotalTokens(total);
+  const fetchUserTokens = async (uid) => {
+    try {
+      const userDocRef = doc(db, "Users", uid);
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const tokens = Number(userData.totalTokens || 0);
+        setUserTokens(tokens);
+        setTotalTokens(tokens);
+      } else {
+        console.warn("User document not found.");
+        setUserTokens(0);
+        setTotalTokens(0);
+      }
+    } catch (error) {
+      console.error("Error fetching user tokens:", error);
+      setUserTokens(0);
+      setTotalTokens(0);
+    }
   };
+
 
   const fetchUser = () => {
     return new Promise((resolve) => {
       auth.onAuthStateChanged(async (currentUser) => {
         if (currentUser) {
           setUser(currentUser);
-          await fetchTokenAwards(currentUser.uid);
+          await fetchUserTokens(currentUser.uid); // 👈 updated
         }
         resolve();
       });
     });
   };
+
 
   useEffect(() => {
     const loadData = async () => {
@@ -129,6 +136,8 @@ function Store() {
     </div>
   );
 }
+
+// hello
 
 function FloatingCartButton({ cart }) {
   const [showPopup, setShowPopup] = useState(false);

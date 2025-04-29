@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { db } from "./firebase";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { doc, updateDoc, getDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
-function CartPage({ setCart, userTokens }) {
+function CartPage({ userTokens }) {
   const location = useLocation();
   const [deliveryOption, setDeliveryOption] = useState(false);
   const [deliveryCost, setDeliveryCost] = useState(0);
@@ -78,28 +78,56 @@ const handleCheckout = async () => {
     return;
   }
 
-  const orderData = {
-    userId: user.uid,
-    cart,
-    deliveryOption,
-    deliveryLocation: deliveryOption ? locationInput : null,
-    total: calculateTotal(),
-    createdAt: serverTimestamp(),
-  };
+  const totalCost = calculateTotal();
 
   try {
+    const userRef = doc(db, "Users", user.uid);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      alert("User document not found.");
+      return;
+    }
+
+    const currentTokens = Number(userSnap.data().totalTokens || 0);
+
+    if (currentTokens < totalCost) {
+      alert("Not enough tokens to complete this order.");
+      return;
+    }
+
+    // Deduct tokens
+    await updateDoc(userRef, {
+      totalTokens: currentTokens - totalCost,
+    });
+
+    // Save order
+    const orderData = {
+      userId: user.uid,
+      cart,
+      deliveryOption,
+      deliveryLocation: deliveryOption ? locationInput : null,
+      total: totalCost,
+      createdAt: serverTimestamp(),
+    };
+
     await addDoc(collection(db, "orders"), orderData);
+
+    // Cleanup
     setLocalCart([]);
     localStorage.removeItem("cart");
     setLocationInput("");
     setDeliveryOption(false);
     setDeliveryCost(0);
-    navigate("/orderconfirmation"); // 🚀 Redirect after success
+
+    navigate("/orderconfirmation");
   } catch (error) {
-    console.error("Error saving order:", error);
+    console.error("Checkout error:", error.message, error.code, error);
+    console.error("Checkout error:", error);
     alert("Failed to place order. Try again.");
   }
 };
+
 
   const fetchCurrentLocation = async () => {
     if (!navigator.geolocation) {

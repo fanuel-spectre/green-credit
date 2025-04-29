@@ -4,6 +4,7 @@ import {
   getDocs,
   updateDoc,
   doc,
+  getDoc,
   Timestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
@@ -39,6 +40,17 @@ export default function CleanupDashboard() {
         rewardTokens: tokens,
         approvedAt: Timestamp.now(),
       });
+      const userRef = doc(db, "Users", userId);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        const currentTokens = userSnap.data().totalTokens || 0;
+
+        // 3. Update totalTokens field
+        await updateDoc(userRef, {
+          totalTokens: currentTokens + tokens,
+        });
+      }
       alert("Submission approved and tokens awarded!");
       setSubmissions((prev) => prev.filter((s) => s.id !== submissionId));
     } catch (err) {

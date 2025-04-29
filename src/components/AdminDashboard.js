@@ -116,6 +116,23 @@ const AdminDashboard = () => {
       console.error("Error awarding tokens:", error);
       toast.error("Failed to award tokens");
     }
+    const userSubmission = await getDoc(
+      doc(db, "TreeSubmissions", submissionId)
+    );
+    const userId = userSubmission.data().userId;
+    
+    const userRef = doc(db, "Users", userId);
+    const userSnap = await getDoc(userRef);
+
+    if (userSnap.exists()) {
+      const currentTokens = userSnap.data().totalTokens || 0;
+
+      // Update totalTokens
+      await updateDoc(userRef, {
+        totalTokens: currentTokens + tokens,
+      });
+    }
+    
   };
 
   const updateAward = async (submissionId) => {

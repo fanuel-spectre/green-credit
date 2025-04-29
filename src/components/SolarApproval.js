@@ -6,6 +6,7 @@ import {
   query,
   where,
   addDoc,
+  getDoc,
   updateDoc,
   doc,
 } from "firebase/firestore";
@@ -51,6 +52,17 @@ export default function AdminSolarApprovals() {
         type: "solar_installation",
         createdAt: new Date(),
       });
+
+      const userRef = doc(db, "Users", userId);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        const currentTokens = userSnap.data().totalTokens || 0;
+
+        await updateDoc(userRef, {
+          totalTokens: currentTokens + rewardTokens,
+        });
+      }
 
       alert("Submission approved and tokens awarded!");
       setSubmissions((prev) => prev.filter((sub) => sub.id !== submissionId));
