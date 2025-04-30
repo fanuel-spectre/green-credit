@@ -5,6 +5,7 @@ import ecoImage from "../assets/plant.png";
 import recycleImg from "../assets/recycle.png";
 import bulbImg from "../assets/green_bulb.png";
 import waterImg from "../assets/water.png"
+import chatImg from "../assets/chat.png"
 import { BsJustify } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 
@@ -34,10 +35,10 @@ export default function LandingPage() {
             <h3>Solar Installations</h3>
             <p>Approve Customers who Installed Solars for users.</p>
           </div>
-          <div onClick={() => navigate("/solarapproval")} style={styles.gridItem}>
-            <img src={waterImg} alt="Install Solar" style={styles.icon} />
-            <h3>Water Management</h3>
-            <p>Approve Customer Submissions on Water Management.</p>
+          <div onClick={() => navigate("/adminchat")} style={styles.gridItem}>
+            <img src={chatImg} alt="Install Solar" style={styles.icon} />
+            <h3>Respond to Users</h3>
+            <p>Assist Users with answering questions.</p>
           </div>
         </div>
       </section>

@@ -26,7 +26,8 @@ import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
 import Register from "./components/Register";
 import CartPage from "./components/Cartpage";
-import { auth } from "./components/firebase";
+import { auth,db } from "./components/firebase";  
+import { doc, getDoc } from "firebase/firestore"; 
 import Footer from "./components/Footer";
 import OrderConfirmation from "./components/OrderConfirmation";
 import ScrollToTop from "./components/ScrollToTop";
@@ -112,11 +113,27 @@ function NavBar({user}) {
   const menuRef = useRef(null);
   const hamburgerRef = useRef(null);
   const location = useLocation();
+  const [userRole, setUserRole] = useState(null);
 
   const handleMenuClick = (e, path) => {
     setMenuOpen(false);
     redirectToLogin(e, path);
   };
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        const userDoc = await getDoc(doc(db, "Users", user.uid));
+        if (userDoc.exists()) {
+          setUserRole(userDoc.data().role); // 'admin' or 'user'
+        }
+      } else {
+        setUserRole(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Close menu when route changes
   useEffect(() => {
@@ -183,42 +200,48 @@ function NavBar({user}) {
                 Home
               </Link>
             </li>
-            <li>
-              <Link
-                to="/activities"
-                style={navLinkStyle}
-                onClick={(e) => redirectToLogin(e, "/activities")}
-              >
-                Activities
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/leaderboard"
-                style={navLinkStyle}
-                onClick={(e) => redirectToLogin(e, "/leaderboard")}
-              >
-                Leaderboard
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/store"
-                style={navLinkStyle}
-                onClick={(e) => redirectToLogin(e, "/store")}
-              >
-                Store
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/rewardhistory"
-                style={navLinkStyle}
-                onClick={(e) => redirectToLogin(e, "/rewardhistory")}
-              >
-                History
-              </Link>
-            </li>
+
+            {userRole !== "admin" && (
+              <>
+                <li>
+                  <Link
+                    to="/activities"
+                    style={navLinkStyle}
+                    onClick={(e) => redirectToLogin(e, "/activities")}
+                  >
+                    Activities
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/leaderboard"
+                    style={navLinkStyle}
+                    onClick={(e) => redirectToLogin(e, "/leaderboard")}
+                  >
+                    Leaderboard
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/store"
+                    style={navLinkStyle}
+                    onClick={(e) => redirectToLogin(e, "/store")}
+                  >
+                    Store
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/rewardhistory"
+                    style={navLinkStyle}
+                    onClick={(e) => redirectToLogin(e, "/rewardhistory")}
+                  >
+                    History
+                  </Link>
+                </li>
+              </>
+            )}
+
             <li>
               <Link
                 to="/profile"
@@ -261,46 +284,52 @@ function NavBar({user}) {
                 Home
               </Link>
             </li>
-            <li style={styles.menuItem}>
-              <FaLeaf style={styles.icon} />
-              <Link
-                to="/activities"
-                style={navLinkStyle}
-                onClick={(e) => handleMenuClick(e, "/activities")}
-              >
-                Activities
-              </Link>
-            </li>
-            <li style={styles.menuItem}>
-              <FaTrophy style={styles.icon} />
-              <Link
-                to="/leaderboard"
-                style={navLinkStyle}
-                onClick={(e) => handleMenuClick(e, "/leaderboard")}
-              >
-                Leaderboard
-              </Link>
-            </li>
-            <li style={styles.menuItem}>
-              <FaStore style={styles.icon} />
-              <Link
-                to="/store"
-                style={navLinkStyle}
-                onClick={(e) => handleMenuClick(e, "/store")}
-              >
-                Store
-              </Link>
-            </li>
-            <li style={styles.menuItem}>
-              <FaHistory style={styles.icon} />
-              <Link
-                to="/rewardhistory"
-                style={navLinkStyle}
-                onClick={(e) => handleMenuClick(e, "/rewardhistory")}
-              >
-                History
-              </Link>
-            </li>
+
+            {userRole !== "admin" && (
+              <>
+                <li style={styles.menuItem}>
+                  <FaLeaf style={styles.icon} />
+                  <Link
+                    to="/activities"
+                    style={navLinkStyle}
+                    onClick={(e) => handleMenuClick(e, "/activities")}
+                  >
+                    Activities
+                  </Link>
+                </li>
+                <li style={styles.menuItem}>
+                  <FaTrophy style={styles.icon} />
+                  <Link
+                    to="/leaderboard"
+                    style={navLinkStyle}
+                    onClick={(e) => handleMenuClick(e, "/leaderboard")}
+                  >
+                    Leaderboard
+                  </Link>
+                </li>
+                <li style={styles.menuItem}>
+                  <FaStore style={styles.icon} />
+                  <Link
+                    to="/store"
+                    style={navLinkStyle}
+                    onClick={(e) => handleMenuClick(e, "/store")}
+                  >
+                    Store
+                  </Link>
+                </li>
+                <li style={styles.menuItem}>
+                  <FaHistory style={styles.icon} />
+                  <Link
+                    to="/rewardhistory"
+                    style={navLinkStyle}
+                    onClick={(e) => handleMenuClick(e, "/rewardhistory")}
+                  >
+                    History
+                  </Link>
+                </li>
+              </>
+            )}
+
             <li style={styles.menuItem}>
               <FaUserCircle style={styles.icon} />
               <Link
