@@ -24,13 +24,13 @@ const activities = [
     title: "Conserve Water",
     icon: "💧",
     description: "Participate in local water-saving drives.",
-    link: "/activities/conserve-water",
+    link: "/comingsoon",
   },
   {
     title: "Recycle Waste",
     icon: "♻️",
     description: "Collect and recycle eligible household waste.",
-    link: "/activities/recycle-waste",
+    link: "/comingsoon",
   },
 ];
 
