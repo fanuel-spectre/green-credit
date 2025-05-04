@@ -346,9 +346,9 @@ function PlantTrees() {
       <button
         style={responsiveStyles.gpsButton}
         onClick={fetchCurrentLocation}
-        disabled={fetchCurrentLocation}
+        disabled={fetchingLocation}
       >
-        {fetchCurrentLocation ? "Fetching..." : "Use My Location"}
+        {fetchingLocation ? "Fetching..." : "Use My Location"}
       </button>
 
       <br />
