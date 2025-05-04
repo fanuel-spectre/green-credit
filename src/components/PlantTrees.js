@@ -203,7 +203,7 @@ function PlantTrees() {
       borderRadius: "8px",
       cursor: "pointer",
       backgroundColor: "#fff",
-      width: isMobile ? "100%" : "400px",
+      width: isMobile ? "80%" : "400px",
       margin: "auto",
     },
     preview: {
@@ -216,7 +216,7 @@ function PlantTrees() {
     },
     input: {
       padding: "10px",
-      width: isMobile ? "90%" : "300px",
+      width: isMobile ? "48%" : "300px",
       borderRadius: "6px",
       border: "1px solid #ccc",
       fontSize: "14px",
@@ -257,19 +257,18 @@ function PlantTrees() {
       boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
       marginBottom: "20px",
     },
-    imagesContainer: {
-      display: "flex",
-      flexDirection: isMobile ? "column" : "row",
-      gap: "10px",
-      justifyContent: "center",
-      marginTop: "10px",
-    },
-    imagePreview: {
-      width: isMobile ? "100%" : "100px",
-      height: "100px",
-      objectFit: "cover",
-      borderRadius: "8px",
-    },
+     imagesContainer: {
+    display: "flex",
+    gap: "10px",
+    justifyContent: "center",
+    marginTop: "10px",
+  },
+  imagePreview: {
+    width: "100px",
+    height: "100px",
+    objectFit: "cover",
+    borderRadius: "8px",
+  },
     deleteButton: {
       backgroundColor: "#e53e3e",
       color: "white",
