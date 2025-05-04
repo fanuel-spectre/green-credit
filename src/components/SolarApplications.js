@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export default function BrowseSolarJobs() {
   const [requests, setRequests] = useState([]);
@@ -56,7 +57,9 @@ export default function BrowseSolarJobs() {
         status: "applied",
         appliedAt: serverTimestamp(),
       });
-      setMessage("Successfully applied! Waiting for confirmation.");
+      toast.success("User logged in Successfully", {
+                position: "top-center",
+              });
     } catch (error) {
       console.error("Application error:", error);
       setMessage("Failed to apply. Try again.");
