@@ -20,6 +20,7 @@ function PlantTrees() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [location, setLocation] = useState("");
+  const [locationInput, setLocationInput] = useState("");
   const [fetchingLocation, setFetchingLocation] = useState(false);
   const [submissions, setSubmissions] = useState([]); // Track submissions
   const [loadingSubmissions, setLoadingSubmissions] = useState(true);
@@ -122,6 +123,7 @@ function PlantTrees() {
       setBeforeImage(null);
       setAfterImage(null);
       setLocation("");
+      setLocationInput("");
       fetchSubmissions(); // Refresh submissions after upload
     } catch (error) {
       console.error("Upload failed:", error);
@@ -148,6 +150,35 @@ function PlantTrees() {
       fetchSubmissions(); // Fetch submissions on component mount
     }
   }, [user]);
+
+  const fetchCurrentLocation = async () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+          const address = data.display_name || `${latitude}, ${longitude}`;
+          setLocationInput(address);
+        } catch (error) {
+          console.error("Error fetching address:", error);
+          setLocationInput(`${latitude}, ${longitude}`);
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        alert("Unable to fetch location. Please allow permission.");
+      }
+    );
+  };
 
   return (
     <div style={styles.container}>
@@ -190,8 +221,8 @@ function PlantTrees() {
         <label style={styles.label}>Location (optional)</label>
         <input
           type="text"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
+          value={locationInput}
+          onChange={(e) => setLocationInput(e.target.value)}
           placeholder="Enter location manually or use GPS"
           style={styles.input}
         />

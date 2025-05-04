@@ -154,8 +154,7 @@ function Register() {
             <SignInwithGoogle />
           </form>
         </div>
-      </div>
-    </div>
+      </div>    </div>
   );
 }
 
