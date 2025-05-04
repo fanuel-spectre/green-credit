@@ -1,49 +1,51 @@
-import React from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "./Onboarding.css"; // Optional for styling
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import "./Onboarding.css"; // We'll define basic styles here
 
-const Onboarding = () => {
-  const navigate = useNavigate();
+const slides = [
+  {
+    title: "Welcome to Green Credit",
+    description:
+      "Earn tokens for planting trees, cleaning up, and supporting your community.",
+    image: "/images/onboard1.png",
+  },
+  {
+    title: "Complete Green Activities",
+    description:
+      "Upload photos for proof, get admin approval, and earn tokens.",
+    image: "/images/onboard2.png",
+  },
+  {
+    title: "Redeem & Give Back",
+    description:
+      "Spend tokens in the store or reward others for helping with solar installs.",
+    image: "/images/onboard3.png",
+  },
+];
 
-  const handleFinish = () => {
-    localStorage.setItem("hasSeenOnboarding", "true");
-    navigate("/dashboard"); // redirect to main app
+const Onboarding = ({ onFinish }) => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const nextSlide = () => {
+    if (currentSlide < slides.length - 1) {
+      setCurrentSlide(currentSlide + 1);
+    } else {
+      localStorage.setItem("hasSeenOnboarding", "true");
+      onFinish();
+    }
   };
 
   return (
     <div className="onboarding-container">
-      <Swiper>
-        <SwiperSlide>
-          <div className="slide">
-            <h2>Welcome to Green Credit</h2>
-            <p>
-              Earn rewards for climate-positive actions like planting trees or
-              joining cleanups.
-            </p>
-          </div>
-        </SwiperSlide>
-        <SwiperSlide>
-          <div className="slide">
-            <h2>Track Your Progress</h2>
-            <p>
-              See your token balance, achievements, and your impact on the
-              environment.
-            </p>
-          </div>
-        </SwiperSlide>
-        <SwiperSlide>
-          <div className="slide">
-            <h2>Redeem and Share</h2>
-            <p>
-              Spend tokens in the store or help others with solar installations
-              and get rewarded.
-            </p>
-            <button onClick={handleFinish}>Get Started</button>
-          </div>
-        </SwiperSlide>
-      </Swiper>
+      <img
+        src={slides[currentSlide].image}
+        alt="Slide"
+        className="onboarding-image"
+      />
+      <h2>{slides[currentSlide].title}</h2>
+      <p>{slides[currentSlide].description}</p>
+      <button className="onboarding-button" onClick={nextSlide}>
+        {currentSlide === slides.length - 1 ? "Get Started" : "Next"}
+      </button>
     </div>
   );
 };
