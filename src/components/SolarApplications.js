@@ -57,9 +57,9 @@ export default function BrowseSolarJobs() {
         status: "applied",
         appliedAt: serverTimestamp(),
       });
-      toast.success("User logged in Successfully", {
-                position: "top-center",
-              });
+      toast.success("Successfully applied! Waiting for confirmation.", {
+        position: "top-center",
+      });
     } catch (error) {
       console.error("Application error:", error);
       setMessage("Failed to apply. Try again.");
