@@ -197,6 +197,7 @@ function PlantTrees() {
     },
     dropzone: {
       marginBottom: "20px",
+      marginTop: "10px",
       padding: "20px",
       border: "2px dashed #ccc",
       borderRadius: "8px",
