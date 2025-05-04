@@ -20,7 +20,7 @@ export default function MySolarRequests() {
       try {
         const q = query(
           collection(db, "SolarInstallations"),
-          where("ownerId", "==", user.uid)
+          where("installerId", "==", user.uid)
         );
         const snapshot = await getDocs(q);
         const data = snapshot.docs.map((doc) => ({
