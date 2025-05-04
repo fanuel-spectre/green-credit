@@ -69,6 +69,8 @@ function PlantTrees() {
       return;
     }
 
+    setFetchingLocation(true); // Start fetching
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
@@ -82,11 +84,14 @@ function PlantTrees() {
         } catch (error) {
           console.error("Error fetching address:", error);
           setLocationInput(`${latitude}, ${longitude}`);
+        } finally {
+          setFetchingLocation(false); // Stop fetching
         }
       },
       (error) => {
         console.error("Geolocation error:", error);
         alert("Unable to fetch location. Please allow permission.");
+        setFetchingLocation(false); // Stop fetching even on error
       }
     );
   };
