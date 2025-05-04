@@ -18,6 +18,7 @@ export default function BrowseSolarJobs() {
   const auth = getAuth();
   const user = auth.currentUser;
   const navigate = useNavigate();
+  
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -97,7 +98,9 @@ export default function BrowseSolarJobs() {
               <p>
                 <strong>Location:</strong> {req.location}
               </p>
-
+              <p>
+                <strong>Token Award:</strong> {req.tokenAmount}
+              </p>
               <button onClick={() => handleApply(req.id)} style={styles.button}>
                 Apply to Install
               </button>
