@@ -4,6 +4,7 @@ import { auth, db } from "./firebase";
 import { setDoc, doc } from "firebase/firestore";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
+import SignInwithGoogle from "./signInWithGoogle";
 
 function Register() {
   const [email, setEmail] = useState("");
@@ -150,6 +151,7 @@ function Register() {
                 Login
               </Link>
             </p>
+            <SignInwithGoogle />
           </form>
         </div>
       </div>
