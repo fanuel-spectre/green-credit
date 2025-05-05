@@ -11,74 +11,89 @@ import {
 import { getAuth } from "firebase/auth";
 
 export default function MySolarRequests() {
-  const [requests, setRequests] = useState([]);
+  const [installations, setInstallations] = useState([]);
   const auth = getAuth();
   const user = auth.currentUser;
 
   useEffect(() => {
-    const fetchMyRequests = async () => {
+    const fetchMyInstallations = async () => {
       try {
-        const q = query(
-          collection(db, "SolarInstallations"),
-          where("installerId", "==", user.uid)
+        // Step 1: Get requests created by the user
+        const requestsSnapshot = await getDocs(
+          query(
+            collection(db, "SolarRequests"),
+            where("userId", "==", user.uid)
+          )
         );
-        const snapshot = await getDocs(q);
-        const data = snapshot.docs.map((doc) => ({
+        const requestIds = requestsSnapshot.docs.map((doc) => doc.id);
+
+        if (requestIds.length === 0) {
+          setInstallations([]); // No requests, no installations
+          return;
+        }
+
+        // Step 2: Get installations related to those requestIds
+        const installationsSnapshot = await getDocs(
+          query(
+            collection(db, "SolarInstallations"),
+            where("requestId", "in", requestIds.slice(0, 10)) // Firestore only supports 10 items in "in" queries
+          )
+        );
+
+        const data = installationsSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-        setRequests(data);
+        setInstallations(data);
       } catch (error) {
-        console.error("Error fetching requests:", error);
+        console.error("Error fetching installations:", error);
       }
     };
 
     if (user) {
-      fetchMyRequests();
+      fetchMyInstallations();
     }
   }, [user]);
 
-  const handleMarkCompleted = async (requestId) => {
+  const handleMarkCompleted = async (id) => {
     try {
-      const requestRef = doc(db, "SolarInstallations", requestId);
-      await updateDoc(requestRef, { completedByOwner: true });
-      alert("Marked as completed!");
-      setRequests((prev) =>
+      const ref = doc(db, "SolarInstallations", id);
+      await updateDoc(ref, { completedByOwner: true });
+      setInstallations((prev) =>
         prev.map((item) =>
-          item.id === requestId ? { ...item, completedByOwner: true } : item
+          item.id === id ? { ...item, completedByOwner: true } : item
         )
       );
+      alert("Marked as completed!");
     } catch (error) {
-      console.error("Error marking completed:", error);
-      alert("Failed to mark completed.");
+      console.error("Error updating installation:", error);
+      alert("Failed to mark as completed.");
     }
   };
 
   return (
     <div style={styles.container}>
       <h2 style={styles.heading}>My Solar Installation Requests</h2>
-      {requests.length === 0 ? (
-        <p>No solar requests yet.</p>
+      {installations.length === 0 ? (
+        <p>No installations yet.</p>
       ) : (
         <div style={styles.grid}>
-          {requests.map((request) => (
-            <div key={request.id} style={styles.card}>
-              <img
-                src={request.imageUrl}
-                alt="Solar Proof"
-                style={styles.image}
-              />
+          {installations.map((inst) => (
+            <div key={inst.id} style={styles.card}>
+              {inst.imageUrl && (
+                <img src={inst.imageUrl} alt="Proof" style={styles.image} />
+              )}
               <p>
-                <strong>Status:</strong> {request.status}
+                <strong>Status:</strong> {inst.status}
               </p>
               <p>
                 <strong>Completed by Owner:</strong>{" "}
-                {request.completedByOwner ? "✅ Yes" : "❌ No"}
+                {inst.completedByOwner ? "✅ Yes" : "❌ No"}
               </p>
-              {!request.completedByOwner && (
+              {!inst.completedByOwner && (
                 <button
                   style={styles.button}
-                  onClick={() => handleMarkCompleted(request.id)}
+                  onClick={() => handleMarkCompleted(inst.id)}
                 >
                   Mark as Completed
                 </button>

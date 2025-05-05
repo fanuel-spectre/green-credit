@@ -19,14 +19,42 @@ export default function BrowseSolarJobs() {
   const auth = getAuth();
   const user = auth.currentUser;
   const navigate = useNavigate();
+  const [myApplications, setMyApplications] = useState([]);
+  const [myAcceptedRequests, setMyAcceptedRequests] = useState([]);
+
   
+useEffect(() => {
+  const fetchUserApplications = async () => {
+    if (!user) return;
+    const appsSnapshot = await getDocs(
+      query(
+        collection(db, "SolarApplications"),
+        where("userId", "==", user.uid)
+      )
+    );
+    const apps = appsSnapshot.docs.map((doc) => doc.data().requestId);
+    setMyApplications(apps);
+
+    // Fetch SolarRequests where current user is acceptedInstaller
+    const acceptedSnapshot = await getDocs(
+      query(
+        collection(db, "SolarRequests"),
+        where("acceptedInstallerId", "==", user.uid)
+      )
+    );
+    const acceptedIds = acceptedSnapshot.docs.map((doc) => doc.id);
+    setMyAcceptedRequests(acceptedIds);
+  };
+
+  fetchUserApplications();
+}, [user]);
 
   useEffect(() => {
     const fetchRequests = async () => {
       try {
         const q = query(
           collection(db, "SolarRequests"),
-          where("status", "==", "open")
+          
         );
         const snapshot = await getDocs(q);
         const data = snapshot.docs.map((doc) => ({
@@ -76,10 +104,16 @@ export default function BrowseSolarJobs() {
           + Add a Request
         </button>
         <button
+          onClick={() => navigate("/solarinstallers")}
+          style={styles.button2}
+        >
+          Applied Installers
+        </button>
+        <button
           onClick={() => navigate("/mysolarrequests")}
           style={styles.button2}
         >
-          My Requests
+          Ongoing Requests
         </button>
       </div>
       <h2 style={styles.heading}>Available Solar Installations</h2>
@@ -92,23 +126,56 @@ export default function BrowseSolarJobs() {
         </p>
       ) : (
         <div style={styles.grid}>
-          {requests.map((req) => (
-            <div key={req.id} style={styles.card}>
-              <h3 style={styles.title}>Request #{req.id.slice(0, 5)}</h3>
-              <p>
-                <strong>Description:</strong> {req.description}
-              </p>
-              <p>
-                <strong>Location:</strong> {req.location}
-              </p>
-              <p>
-                <strong>Token Award:</strong> {req.tokenAmount}
-              </p>
-              <button onClick={() => handleApply(req.id)} style={styles.button}>
-                Apply to Install
-              </button>
-            </div>
-          ))}
+          {requests.map((req) => {
+            const hasApplied = myApplications.includes(req.id);
+            const isAccepted = myAcceptedRequests.includes(req.id);
+
+            return (
+              <div key={req.id} style={styles.card}>
+                <h3>Request ID: {req.id}</h3>
+                <p>
+                  <strong>Description:</strong> {req.description}
+                </p>
+                <p>
+                  <strong>Location:</strong> {req.location}
+                </p>
+                <p>
+                  <strong>Token Award:</strong> {req.tokenAmount}
+                </p>
+
+                {isAccepted ? (
+                  <button
+                    onClick={() =>
+                      navigate(`/solarsubmissions`, {
+                        state: { requestId: req.id },
+                      })
+                    }
+                    style={styles.button}
+                  >
+                    Submit Proof
+                  </button>
+                ) : hasApplied ? (
+                  <button
+                    style={{
+                      ...styles.button,
+                      backgroundColor: "#ccc",
+                      cursor: "not-allowed",
+                    }}
+                    disabled
+                  >
+                    You applied to this task
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleApply(req.id)}
+                    style={styles.button}
+                  >
+                    Apply to Install
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
       {message && <p style={styles.message}>{message}</p>}

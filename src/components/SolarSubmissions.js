@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { db } from "./firebase";
 import {
@@ -13,6 +14,7 @@ import axios from "axios";
 export default function SubmitSolarInstallationProof() {
   const auth = getAuth();
   const user = auth.currentUser;
+  const location = useLocation();
   const [requestId, setRequestId] = useState("");
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -24,6 +26,11 @@ export default function SubmitSolarInstallationProof() {
     setImage(file);
     setPreview(URL.createObjectURL(file));
   };
+  useEffect(() => {
+    if (location.state?.requestId) {
+      setRequestId(location.state.requestId);
+    }
+  }, [location.state]);
 
   const uploadToCloudinary = async (file) => {
     const formData = new FormData();

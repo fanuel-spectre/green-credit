@@ -5,6 +5,7 @@ import {
   query,
   where,
   getDocs,
+  getDoc,
   doc,
   updateDoc,
 } from "firebase/firestore";
@@ -20,7 +21,9 @@ export default function ManageSolarApplications() {
   useEffect(() => {
     const fetchApplications = async () => {
       if (!user) return;
+
       try {
+        // Fetch all SolarApplications
         const q = query(collection(db, "SolarApplications"));
         const snapshot = await getDocs(q);
         const appsData = snapshot.docs.map((doc) => ({
@@ -28,6 +31,7 @@ export default function ManageSolarApplications() {
           ...doc.data(),
         }));
 
+        // Fetch the current user's solar requests
         const userRequestsSnapshot = await getDocs(
           query(
             collection(db, "SolarRequests"),
@@ -36,10 +40,32 @@ export default function ManageSolarApplications() {
         );
         const userRequests = userRequestsSnapshot.docs.map((doc) => doc.id);
 
+        // Filter applications to only those for this user's requests
         const filteredApps = appsData.filter((app) =>
           userRequests.includes(app.requestId)
         );
-        setApplications(filteredApps);
+
+        // Get unique installer IDs
+        const installerIds = [
+          ...new Set(filteredApps.map((app) => app.userId)),
+        ];
+
+        // Fetch installer details by document ID
+        const installersMap = {};
+        for (const id of installerIds) {
+          const installerDoc = await getDoc(doc(db, "Users", id));
+          if (installerDoc.exists()) {
+            installersMap[id] = installerDoc.data();
+          }
+        }
+
+        // Add installer name to each application
+        const enrichedApps = filteredApps.map((app) => ({
+          ...app,
+          installerName: installersMap[app.userId]?.firstName || "Unknown",
+        }));
+
+        setApplications(enrichedApps);
       } catch (error) {
         console.error("Error fetching applications:", error);
         setMessage("Failed to load applications.");
@@ -78,7 +104,7 @@ export default function ManageSolarApplications() {
           {applications.map((app) => (
             <div key={app.id} style={styles.card}>
               <p>
-                <strong>Installer User ID:</strong> {app.userId}
+                <strong>Installer:</strong> {app.installerName}
               </p>
               <p>
                 <strong>Request ID:</strong> {app.requestId}
