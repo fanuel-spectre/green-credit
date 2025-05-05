@@ -10,6 +10,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { toast } from "react-toastify";
 
 export default function ManageSolarApplications() {
   const [applications, setApplications] = useState([]);
@@ -84,7 +85,9 @@ export default function ManageSolarApplications() {
         acceptedInstallerId: application.userId,
         status: "in progress",
       });
-      setMessage("Installer accepted successfully!");
+      toast.success("Admin logged in Successfully", {
+                position: "top-center",
+              });
     } catch (error) {
       console.error("Error accepting installer:", error);
       setMessage("Failed to accept installer.");
