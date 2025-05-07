@@ -12,57 +12,66 @@ import {
 } from "firebase/firestore";
 
 function UserChat() {
-  const user = auth.currentUser; // Get the logged-in user
+  const [user, setUser] = useState(null); // Track logged-in user
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
 
+  // Listen for auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Fetch messages when user is available
   useEffect(() => {
     if (!user) return;
 
-    // Firestore query to fetch all messages for this user (both admin and user)
     const q = query(
       collection(db, "Messages"),
       where("userId", "==", user.uid),
-      orderBy("createdAt", "asc") // Ensure messages are sorted in the correct order
+      orderBy("createdAt", "asc")
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const msgs = snapshot.docs.map((doc) => ({
-        id: doc.id, // Include ID for rendering
+        id: doc.id,
         ...doc.data(),
       }));
-      setMessages(msgs); // Update the state with fetched messages
+      setMessages(msgs);
     });
 
-    return () => unsubscribe(); // Clean up the listener when component unmounts
-  }, [user?.uid]); // Re-run effect only when user changes
+    return () => unsubscribe();
+  }, [user]);
 
   const sendMessage = async () => {
-    if (newMessage.trim() === "") return;
+    if (!newMessage.trim() || !user) return;
 
     const messageData = {
       userId: user.uid,
-      sender: "user", // Mark the sender as "user"
+      sender: "user",
       message: newMessage.trim(),
       createdAt: serverTimestamp(),
     };
 
-    // Optimistically update the UI by adding the new message
-    setMessages((prevMessages) => [...prevMessages, messageData]);
+    // Optimistic UI update
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { ...messageData, createdAt: new Date() },
+    ]);
 
-    // Send the message to Firestore
     await addDoc(collection(db, "Messages"), messageData);
-
-    setNewMessage(""); // Clear the input
+    setNewMessage("");
   };
 
-  // Scroll the chat box to the bottom when new messages are added
+  // Scroll to bottom when new messages are added
   useEffect(() => {
     const chatBox = document.getElementById("chat-box");
     if (chatBox) {
       chatBox.scrollTop = chatBox.scrollHeight;
     }
-  }, [messages]); // This will run whenever messages change
+  }, [messages]);
 
   return (
     <div style={styles.container}>

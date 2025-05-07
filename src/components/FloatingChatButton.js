@@ -1,11 +1,30 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ImBubbles2 } from "react-icons/im";
+import { auth } from "./firebase";
+
 const FloatingChatButton = () => {
   const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setIsAuthenticated(!!user); // true if logged in, false if not
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleClick = () => {
+    if (isAuthenticated) {
+      navigate("/userchat");
+    } else {
+      navigate("/login"); // Change this to your actual login route if different
+    }
+  };
 
   return (
-    <button onClick={() => navigate("/userchat")} style={styles.button}>
+    <button onClick={handleClick} style={styles.button}>
       <ImBubbles2 style={styles.icon} />
     </button>
   );

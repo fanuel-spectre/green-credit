@@ -40,6 +40,11 @@ export default function AdminSolarApprovals() {
 
   const handleApprove = async (submissionId, userId, rewardTokens) => {
     try {
+      if (!userId) {
+        alert("Submission is missing user ID.");
+        return;
+      }
+
       // 1. Mark submission as approved
       const submissionRef = doc(db, "SolarInstallations", submissionId);
       await updateDoc(submissionRef, { status: "approved" });
@@ -72,6 +77,7 @@ export default function AdminSolarApprovals() {
     }
   };
 
+
   return (
     <div style={styles.container}>
       <h2 style={styles.heading}>Admin Solar Installations Approval</h2>
@@ -89,7 +95,7 @@ export default function AdminSolarApprovals() {
                 style={styles.image}
               />
               <p>
-                <strong>User ID:</strong> {submission.userId}
+                <strong>User ID:</strong> {submission.installerId}
               </p>
               <p>
                 <strong>Status:</strong> {submission.status}
@@ -107,7 +113,7 @@ export default function AdminSolarApprovals() {
                     () =>
                       handleApprove(
                         submission.id,
-                        submission.userId,
+                        submission.installerId,
                         submission.tokenReward || 50
                       ) // default 50 tokens
                   }

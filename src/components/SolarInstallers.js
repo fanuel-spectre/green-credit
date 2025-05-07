@@ -85,9 +85,9 @@ export default function ManageSolarApplications() {
         acceptedInstallerId: application.userId,
         status: "in progress",
       });
-      toast.success("Admin logged in Successfully", {
-                position: "top-center",
-              });
+      toast.success("Installer accepted successfully!", {
+        position: "top-center",
+      });
     } catch (error) {
       console.error("Error accepting installer:", error);
       setMessage("Failed to accept installer.");
